@@ -50,7 +50,7 @@ export async function renderNextRace(container) {
     container.insertAdjacentHTML('beforeend', `<h3>🏁 Próxima Carrera</h3>`);
     
     // Elemento de la carrera
-    const raceElement = createRaceElement(nextRace);
+    const raceElement = await createRaceElement(nextRace);
     container.appendChild(raceElement);
     container.appendChild(timezoneContainer);
     
@@ -73,22 +73,24 @@ export async function renderNextRace(container) {
   }
 }
 
-function createRaceElement(race) {
+async function createRaceElement(race) {
   const countryCode = getCountryCode(race.Circuit.Location.country);
   const raceDate = new Date(`${race.date}T${race.time}`);
+  const circuitImageUrl = await getCircuitImageUrl(race.Circuit.circuitName); // Cargar la imagen de circuito anticipadamente
   
   const container = document.createElement('div');
   container.className = 'main-race';
   
   container.innerHTML = `
     <div class="race-image-container">
-      <img src="${race.circuitImage || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200"><rect fill="%231e293b" width="400" height="200"/><text fill="%2364748b" font-family="Arial" font-size="16" x="50" y="100">Imagen del circuito</text></svg>'}" 
-           alt="${race.circuitName}" 
-           loading="lazy"
-           onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400\" height=\"200\" viewBox=\"0 0 400 200\"><rect fill=\"%231e293b\" width=\"400\" height=\"200\"/><text fill=\"%2364748b\" font-family=\"Arial\" font-size=\"16\" x=\"50\" y=\"100\">Imagen del circuito</text></svg>'; this.classList.add('placeholder');"
+      <img src="${circuitImageUrl}" 
+           alt="${race.Circuit.circuitName}" 
+           loading="eager"
            style="object-fit: cover; width: 100%; height: 100%;" />
-      <img src="${getFlagUrl(countryCode, 32)}" alt="${race.Circuit.Location.country}" class="race-flag" 
-           onerror="this.src='https://flagcdn.com/w20/xx.png';this.style.display='none';" 
+      <img src="${getFlagUrl(countryCode, 32)}" 
+           alt="${race.Circuit.Location.country}" 
+           class="race-flag" 
+           onerror="this.style.display='none';"
            style="position: absolute; top: 0.5rem; right: 0.5rem; border-radius: 0.25rem; border: 2px solid white; width: 32px; height: 24px; z-index: 2;" />
     </div>
     
@@ -103,19 +105,6 @@ function createRaceElement(race) {
       </div>
     </div>
   `;
-  
-  // Obtener la imagen del circuito después de renderizar
-  (async () => {
-    try {
-      const circuitImageUrl = await getCircuitImageUrl(race.Circuit.circuitName);
-      const imgElement = container.querySelector('.race-image-container img:not(.race-flag)');
-      if (imgElement && imgElement.src.includes('Imagen del circuito')) {
-        imgElement.src = circuitImageUrl;
-      }
-    } catch (error) {
-      console.log('Error loading circuit image:', error);
-    }
-  })();
   
   return container;
 }
@@ -151,6 +140,3 @@ function startTimeRemainingUpdates(race) {
   
   // También actualizar cada cambio de país (esto se hará desde el selector)
 }
-
-// Exportación para el módulo
-export { updateTimeRemaining, startTimeRemainingUpdates };

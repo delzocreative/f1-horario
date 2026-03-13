@@ -11,9 +11,6 @@
         <header class="header">
             <h1>🏁 F1 Dashboard</h1>
             <div class="header-controls">
-                <select id="year-selector" class="year-selector">
-                    <!-- Populated by JS -->
-                </select>
                 <button id="refresh-btn" class="refresh-btn" title="Actualizar datos">
                     🔄
                 </button>
@@ -23,36 +20,38 @@
         <main class="main-content">
             <!-- Sección Principal: Horario y standings actuales -->
             <section class="main-section">
-                <!-- Next Race Hero Slot -->
-                <div id="next-race-container" class="slot next-race-slot">
-                    <div class="loading skeleton">
-                        <div class="skeleton-box"></div>
-                        <div class="skeleton-text"></div>
-                        <div class="skeleton-text short"></div>
-                    </div>
-                </div>
-
-                <div class="secondary-grid">
-                    <!-- Driver Standings Preview (Del año actual) -->
-                    <div id="driver-standings-preview" class="card standings-card skeleton">
-                        <h3 class="card-title">🏆 Pilotos (Año Actual)</h3>
-                        <div class="skeleton-list">
-                            <div class="skeleton-item"></div>
-                            <div class="skeleton-item"></div>
-                            <div class="skeleton-item"></div>
+                <div class="primary-secondary-layout">
+                    <!-- Next Race Slot -->
+                    <div id="next-race-container" class="slot next-race-slot">
+                        <div class="loading skeleton">
+                            <div class="skeleton-box"></div>
+                            <div class="skeleton-text"></div>
+                            <div class="skeleton-text short"></div>
                         </div>
-                        <div class="skeleton-button"></div>
                     </div>
 
-                    <!-- Constructor Standings Preview (Del año actual) -->
-                    <div id="constructor-standings-preview" class="card standings-card skeleton">
-                        <h3 class="card-title">🔧 Constructores (Año Actual)</h3>
-                        <div class="skeleton-list">
-                            <div class="skeleton-item"></div>
-                            <div class="skeleton-item"></div>
-                            <div class="skeleton-item"></div>
+                    <div class="secondary-grid-top">
+                        <!-- Driver Standings Preview (Del año actual) -->
+                        <div id="driver-standings-preview" class="card standings-card skeleton">
+                            <h3 class="card-title">🏆 Pilotos (Año Actual)</h3>
+                            <div class="skeleton-list">
+                                <div class="skeleton-item"></div>
+                                <div class="skeleton-item"></div>
+                                <div class="skeleton-item"></div>
+                            </div>
+                            <div class="skeleton-button"></div>
                         </div>
-                        <div class="skeleton-button"></div>
+
+                        <!-- Constructor Standings Preview (Del año actual) -->
+                        <div id="constructor-standings-preview" class="card standings-card skeleton">
+                            <h3 class="card-title">🔧 Constructores (Año Actual)</h3>
+                            <div class="skeleton-list">
+                                <div class="skeleton-item"></div>
+                                <div class="skeleton-item"></div>
+                                <div class="skeleton-item"></div>
+                            </div>
+                            <div class="skeleton-button"></div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -61,10 +60,16 @@
             <section class="historical-section">
                 <div class="historical-header">
                     <h2>📋 Historial</h2>
-                    <div class="history-filter-controls">
-                        <button id="tab-drivers" class="tab-btn active">Pilotos</button>
-                        <button id="tab-constructors" class="tab-btn">Constructores</button>
+                    <div class="header-controls-secondary">
+                        <select id="year-selector" class="year-selector">
+                            <!-- Populated by JS -->
+                        </select>
                     </div>
+                </div>
+                
+                <div class="history-filter-controls">
+                    <button id="tab-drivers" class="tab-btn active">Pilotos</button>
+                    <button id="tab-constructors" class="tab-btn">Constructores</button>
                 </div>
                 
                 <div id="historical-table-container" class="table-container">

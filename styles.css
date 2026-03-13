@@ -63,6 +63,12 @@ body {
   align-items: center;
 }
 
+.header-controls-secondary {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
 .year-selector {
   padding: 0.5rem 1rem;
   background: var(--color-bg-card);
@@ -91,14 +97,39 @@ body {
 
 /* Main content layout */
 .main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Layout for primary and secondary sections */
+.primary-secondary-layout {
   display: grid;
   grid-template-columns: 1fr;
   gap: 2rem;
 }
 
+.secondary-grid-top {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+/* Responsive layout for desktop */
 @media (min-width: 1024px) {
-  .main-content {
+  .primary-secondary-layout {
     grid-template-columns: 2fr 1fr;
+  }
+  
+  .secondary-grid-top {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Responsive layout for tablets */
+@media (min-width: 768px) {
+  .secondary-grid-top {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -108,6 +139,7 @@ body {
   border-radius: 1rem;
   padding: 1.5rem;
   border: 1px solid var(--color-border);
+  min-width: 0;
 }
 
 .card {
@@ -115,6 +147,7 @@ body {
   border: 1px solid var(--color-border);
   border-radius: 0.75rem;
   padding: 1.25rem;
+  min-width: 0;
 }
 
 .next-race-slot {
@@ -122,6 +155,7 @@ body {
   flex-direction: column;
 }
 
+/* Secondary grid for standings cards */
 .secondary-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -379,6 +413,7 @@ body {
 .history-filter-controls {
   display: flex;
   gap: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 .tab-btn {
@@ -386,7 +421,7 @@ body {
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
   color: var(--color-text);
-  border-radius: 0.75rem 0.75rem 0 0;
+  border-radius: 0.5rem;
   cursor: pointer;
   font-family: var(--font-sans);
   transition: all 0.2s;

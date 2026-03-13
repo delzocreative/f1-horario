@@ -15,10 +15,17 @@ export function renderHeader(year, onYearChange, onRefresh) {
 
 export async function populateYearSelector(defaultYear) {
   try {
-    const years = await getYears();
-    
+    // Si ya existe el selector y tiene opciones, solo actualizamos el valor
     const yearSelector = document.getElementById('year-selector');
-    if (!yearSelector) return;
+    if (!yearSelector) return [];
+    
+    // Evitar duplicados en la actualización
+    if (yearSelector.children.length > 0) {
+      yearSelector.value = defaultYear;
+      return Array.from(yearSelector.options).map(option => parseInt(option.value));
+    }
+    
+    const years = await getYears();
     
     // Limpiar selector
     yearSelector.innerHTML = '';

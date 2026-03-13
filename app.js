@@ -4,45 +4,44 @@ import { renderStandingsPreview } from './components/standings-preview.js';
 import { renderHistoricalTable } from './components/standings-table.js';
 import { renderHeader, populateYearSelector } from './components/header.js';
 import { cache } from './utils/cache.js';
-import { getNextRaces, getDriverStandings, getConstructorStandings } from './api/client.js';
+import { getNextRaces, getDriverStandings, getConstructorStandings, getYears } from './api/client.js';
+import { getDriverStandings as getHistoricalDriverStandings, getConstructorStandings as getHistoricalConstructorStandings } from './api/client.js';
 
 // Variables de estado
 let currentYear = new Date().getFullYear();
-// Mostrar el último año con datos (si estamos en 2026, mostrar 2025)
+// Mostrar el último año con datos disponibles
 let displayYear = currentYear; 
-
-// Variables globales para poder actualizar las tablas por separado
 let selectedHistoricalYear = null;
 let historicalTab = 'drivers';
 
-// Elementos DOM (reescribiendo la estructura de carga)
-const container = document.querySelector('.container');
-const headerContainer = container.querySelector('.header');
-const mainContent = container.querySelector('.main-content');
-
-// Obtener elementos de las secciones principales
-const nextRaceContainer = document.getElementById('next-race-container');
-const driverStandingsPreview = document.getElementById('driver-standings-preview');
-const constructorStandingsPreview = document.getElementById('constructor-standings-preview');
-const historicalTableContainer = document.getElementById('historical-table-container');
+// Elementos globales
+let driverStandingsPreview = null;
+let constructorStandingsPreview = null;
+let historicalTableContainer = null;
+let yearSelector = null;
+let driversTabBtn = null;
+let constructorsTabBtn = null;
 
 // Inicializar aplicación
 async function init() {
   try {
+    // Inicializar elementos DOM
+    driverStandingsPreview = document.getElementById('driver-standings-preview');
+    constructorStandingsPreview = document.getElementById('constructor-standings-preview');
+    historicalTableContainer = document.getElementById('historical-table-container');
+    
     // Ajustar el año a mostrar: usar el más reciente con datos
-    if (currentYear >= 2020) {
-      displayYear = currentYear - 1; // Mostrar el último año con datos
-    } else {
-      displayYear = currentYear; // En caso extremo
+    const availableYears = await getYears();
+    if (availableYears.length > 0) {
+      displayYear = availableYears[0]; // Año más reciente
+      selectedHistoricalYear = availableYears[0]; // Para la tabla histórica también
+      populateYearSelector(selectedHistoricalYear);
     }
-    
-    // Populating year selector
-    const availableYears = await populateYearSelector(displayYear);
-    
-    // Actualizar selectedHistoricalYear con el disponible más reciente
-    if (availableYears.length > 0 && !selectedHistoricalYear) {
-      selectedHistoricalYear = availableYears[0]; // Año más reciente
-    }
+
+    // Verificar elementos DOM
+    driversTabBtn = document.getElementById('tab-drivers');
+    constructorsTabBtn = document.getElementById('tab-constructors');
+    yearSelector = document.getElementById('year-selector');
 
     // Configurar eventos
     setupEventListeners();
@@ -60,8 +59,7 @@ async function init() {
 }
 
 function setupEventListeners() {
-  // Cambio de año para la sección histórica (no para la sección actual)
-  const yearSelector = document.getElementById('year-selector');
+  // Cambio de año para la sección histórica (el selector está ahora en la sección histórica)
   if (yearSelector) {
     yearSelector.addEventListener('change', (e) => {
       selectedHistoricalYear = parseInt(e.target.value);
@@ -70,16 +68,17 @@ function setupEventListeners() {
   }
   
   // Tabs para rankings históricos
-  const driversTabBtn = document.getElementById('tab-drivers');
-  const constructorsTabBtn = document.getElementById('tab-constructors');
-  
   if (driversTabBtn) {
     driversTabBtn.addEventListener('click', () => {
       if (historicalTab !== 'drivers') {
         historicalTab = 'drivers';
         driversTabBtn.classList.add('active');
-        constructorsTabBtn.classList.remove('active');
-        renderHistoricalTable(historicalTableContainer, selectedHistoricalYear, 'drivers');
+        if (constructorsTabBtn) {
+          constructorsTabBtn.classList.remove('active');
+        }
+        getHistoricalDriverStandings(selectedHistoricalYear).then(driverStandings => {
+          renderHistoricalTable(historicalTableContainer, selectedHistoricalYear, 'drivers');
+        });
       }
     });
   }
@@ -89,8 +88,12 @@ function setupEventListeners() {
       if (historicalTab !== 'constructors') {
         historicalTab = 'constructors';
         constructorsTabBtn.classList.add('active');
-        driversTabBtn.classList.remove('active');
-        renderHistoricalTable(historicalTableContainer, selectedHistoricalYear, 'constructors');
+        if (driversTabBtn) {
+          driversTabBtn.classList.remove('active');
+        }
+        getHistoricalConstructorStandings(selectedHistoricalYear).then(constructorStandings => {
+          renderHistoricalTable(historicalTableContainer, selectedHistoricalYear, 'constructors');
+        });
       }
     });
   }
@@ -110,13 +113,14 @@ function setupEventListeners() {
 async function renderMainSection(year) {
   try {
     // Renderizar componente de carrera siguiente (primer elemento)
+    const nextRaceContainer = document.getElementById('next-race-container');
     if (nextRaceContainer) {
       await renderNextRace(nextRaceContainer);
     }
     
     // Renderizar previsualización de rankings DE ESTE AÑO (no el año seleccionado en el histórico)
     if (driverStandingsPreview && constructorStandingsPreview) {
-      renderStandingsPreview(driverStandingsPreview, constructorStandingsPreview, displayYear);
+      renderStandingsPreview(driverStandingsPreview, constructorStandingsPreview, year);
     }
   } catch (error) {
     console.error('Error rendering main section:', error);
