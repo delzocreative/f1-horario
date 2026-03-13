@@ -81,6 +81,116 @@ function renderDriverStandings(container, driverStandings, year) {
             <div>
               <div class="driver-name">${driver.givenName} ${driver.familyName}</div>
               <div class="driver-nationality">
+                <img src="${getFlagUrl(nationalityCode, 16)}" 
+                     alt="${driver.nationality}" 
+                     width="16" 
+                     height="11" 
+                     onerror="this.onerror=null; this.src='https://flagcdn.com/w16/${nationalityCode || 'xx'}.png';" 
+                     style="border: 1px solid #ccc; border-radius: 2px;" />
+              </div>
+            </div>
+            <div class="driver-points">${standing.points} pts</div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderConstructorStandings(container, constructorStandings, year) {
+  if (!constructorStandings || !Array.isArray(constructorStandings)) {
+    container.innerHTML = `<h3 class="card-title">🔧 Constructores (${year})</h3><p>No hay datos disponibles</p>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <h3 class="card-title">🔧 Constructores (${year})</h3>
+    <div class="standings-list">
+      ${constructorStandings.slice(0, 3).map((standing, idx) => {
+        const position = parseInt(standing.position);
+        const constructor = standing.Constructor;
+        const nationalityCode = getCountryCode(constructor.nationality);
+        
+        let rankClass = 'rank-normal';
+        if (position === 1) rankClass = 'rank-gold';
+        else if (position === 2) rankClass = 'rank-silver';
+        else if (position === 3) rankClass = 'rank-bronze';
+        
+        return `
+          <div class="constructor-item">
+            <div class="constructor-rank ${rankClass}">${position}</div>
+            <div class="constructor-name">${constructor.name}</div>
+            <div class="constructor-points">${standing.points} pts</div>
+            <div class="constructor-nationality">
+              <img src="${getFlagUrl(nationalityCode, 16)}" 
+                   alt="${constructor.nationality}" 
+                   width="16" 
+                   height="11" 
+                   onerror="this.onerror=null; this.src='https://flagcdn.com/w16/${nationalityCode || 'xx'}.png';" 
+                   style="border: 1px solid #ccc; border-radius: 2px;" />
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderDriverSkeleton(container, year) {
+  const displayYear = year || (new Date().getFullYear() - 1);
+  container.innerHTML = `
+    <div class="skeleton">
+      <h3 class="card-title">🏆 Pilotos (${displayYear})</h3>
+      <div class="skeleton-list">
+        <div class="skeleton-item"></div>
+        <div class="skeleton-item"></div>
+        <div class="skeleton-item"></div>
+      </div>
+      <div class="skeleton-button"></div>
+    </div>
+  `;
+}
+
+function renderConstructorSkeleton(container, year) {
+  const displayYear = year || (new Date().getFullYear() - 1);
+  container.innerHTML = `
+    <div class="skeleton">
+      <h3 class="card-title">🔧 Constructores (${displayYear})</h3>
+      <div class="skeleton-list">
+        <div class="skeleton-item"></div>
+        <div class="skeleton-item"></div>
+        <div class="skeleton-item"></div>
+      </div>
+      <div class="skeleton-button"></div>
+    </div>
+  `;
+}
+
+function renderDriverStandings(container, driverStandings, year) {
+  if (!driverStandings || !Array.isArray(driverStandings)) {
+    container.innerHTML = `<h3 class="card-title">🏆 Pilotos (${year})</h3><p>No hay datos disponibles</p>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <h3 class="card-title">🏆 Pilotos (${year})</h3>
+    <div class="standings-list">
+      ${driverStandings.slice(0, 3).map((standing, idx) => {
+        const position = parseInt(standing.position);
+        const driver = standing.Driver;
+        const nationalityCode = getCountryCode(driver.nationality);
+        
+        let rankClass = 'rank-normal';
+        if (position === 1) rankClass = 'rank-gold';
+        else if (position === 2) rankClass = 'rank-silver';
+        else if (position === 3) rankClass = 'rank-bronze';
+        
+        return `
+          <div class="driver-item">
+            <div class="driver-rank ${rankClass}">${position}</div>
+            <div>
+              <div class="driver-name">${driver.givenName} ${driver.familyName}</div>
+              <div class="driver-nationality">
                 <img src="${getFlagUrl(nationalityCode, 16)}" alt="${driver.nationality}" width="16" height="11" onerror="this.src='https://flagcdn.com/w16/xx.png'" />
               </div>
             </div>
