@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F1 Dashboard LATAM - Test</title>
+    <style>
+        body {
+            background: #0f172a;
+            color: #f1f5f9;
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #1e293b;
+            border-radius: 1rem;
+            padding: 2rem;
+            border: 1px solid #334155;
+        }
+        h1 {
+            color: #e10600;
+            text-align: center;
+        }
+        .status {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+        .success {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid #22c55e;
+        }
+        .info {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid #3b82f6;
+        }
+        .instructions {
+            background: rgba(245, 158, 11, 0.2);
+            border: 1px solid #f59e0b;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🏁 F1 Dashboard LATAM</h1>
+        
+        <div class="status success">
+            <h3>✅ Cambios completados exitosamente</h3>
+            <p>Se han realizado todas las correcciones solicitadas:</p>
+            <ul>
+                <li>✓ Corregidas imágenes de circuitos que estaban rotas</li>
+                <li>✓ Corregidas banderas que no aparecían</li>
+                <li>✓ Reorganizado layout: Horarios arriba, standings al lado, históricos abajo</li>
+                <li>✓ Las cards de pilotos y constructores ahora están al lado de la carrera</li>
+                <li>✓ El dropdown de año está en la sección histórica, no arriba</li>
+                <li>✓ Se muestran los standings del último año por defecto</li>
+            </ul>
+        </div>
+        
+        <div class="status info">
+            <h3>🔄 Despliegue en Cloudflare Pages</h3>
+            <p>Sigue los siguientes pasos para implementar en Cloudflare Pages:</p>
+            <ol>
+                <li>Entra a <a href="https://dash.cloudflare.com/" target="_blank">https://dash.cloudflare.com/</a></li>
+                <li>Ve al menú "Account Home" → "Pages"</li>
+                <li>Haz clic en "Create a project"</li>
+                <li>Selecciona "Connect to Git"</li>
+                <li>Elige el repositorio: <strong>enzoantoni-devops/f1-dashboard-latam</strong></li>
+                <li>En la configuración de Build, deja todo en blanco (sitio estático):<br>
+                    - Framework preset: <em>(none)</em><br>
+                    - Build command: <em>(blank)</em><br>
+                    - Build output directory: <code>.</code><br>
+                    - Root directory: <code>./</code></li>
+                <li>Haz clic en "Save and deploy"</li>
+            </ol>
+        </div>
+        
+        <div class="instructions">
+            <h3>💡 Notas de mejora</h3>
+            <p>El dashboard ahora incluye:</p>
+            <ul>
+                <li>Imágenes fiables de circuitos desde Wikipedia API</li>
+                <li>Banderas correctamente dimensionadas</li>
+                <li>Estructura de interfaz mejorada para desktop/mobile</li>
+                <li>Eficientes placeholders de SVG como respaldo</li>
+                <li>Control preciso sobre cuándo se muestran los datos históricos</li>
+            </ul>
+        </div>
+        
+        <div class="status">
+            <h3>🔗 Repositorio</h3>
+            <p>Puedes ver los últimos cambios en:<br>
+            <a href="https://github.com/enzoantoni-devops/f1-dashboard-latam" target="_blank">https://github.com/enzoantoni-devops/f1-dashboard-latam</a></p>
+        </div>
+    </div>
+</body>
+</html>

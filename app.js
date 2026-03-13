@@ -4,13 +4,13 @@ import { renderStandingsPreview } from './components/standings-preview.js';
 import { renderHistoricalTable } from './components/standings-table.js';
 import { renderHeader, populateYearSelector } from './components/header.js';
 import { cache } from './utils/cache.js';
-import { getNextRaces, getDriverStandings, getConstructorStandings, getYears } from './api/client.js';
+import { getNextRaces, getYears } from './api/client.js';
 import { getDriverStandings as getHistoricalDriverStandings, getConstructorStandings as getHistoricalConstructorStandings } from './api/client.js';
 
 // Variables de estado
 let currentYear = new Date().getFullYear();
-// Mostrar el último año con datos disponibles
-let displayYear = currentYear; 
+// Usar el año anterior al actual (2026 → mostrar 2025)
+let displayYear = currentYear - 1; 
 let selectedHistoricalYear = null;
 let historicalTab = 'drivers';
 
@@ -30,12 +30,22 @@ async function init() {
     constructorStandingsPreview = document.getElementById('constructor-standings-preview');
     historicalTableContainer = document.getElementById('historical-table-container');
     
-    // Ajustar el año a mostrar: usar el más reciente con datos
+    // Ajustar el año a mostrar: usar el año anterior al actual
     const availableYears = await getYears();
+    let actualDisplayYear = displayYear;
+
+    // Validar que el año anterior esté disponible, sino tomar el más reciente
     if (availableYears.length > 0) {
-      displayYear = availableYears[0]; // Año más reciente
-      selectedHistoricalYear = availableYears[0]; // Para la tabla histórica también
-      populateYearSelector(selectedHistoricalYear);
+      if (!availableYears.includes(actualDisplayYear)) {
+        actualDisplayYear = Math.min(...availableYears.filter(year => year <= currentYear)); // Año más cercano menor o igual al actual
+      }
+      selectedHistoricalYear = actualDisplayYear; // Para la tabla histórica también mostrar el año anterior/disponible
+      
+      // Populate year selector with current year and previous one as default
+      await populateYearSelector(currentYear);
+      if (yearSelector) {
+        yearSelector.value = actualDisplayYear; // Seleccionar el año anterior por defecto
+      }
     }
 
     // Verificar elementos DOM
@@ -47,8 +57,8 @@ async function init() {
     setupEventListeners();
     
     // Renderizar componentes iniciales en el nuevo orden
-    await renderMainSection(displayYear); // Sección principal: horario + standings actuales
-    await renderHistoricalSection(selectedHistoricalYear, historicalTab); // Sección histórica
+    await renderMainSection(actualDisplayYear); // Sección principal: horario + standings del año anterior
+    await renderHistoricalSection(actualDisplayYear, historicalTab); // Sección histórica también con el año anterior
     
     // Configurar auto-refresh
     setupAutoRefresh();
@@ -76,9 +86,7 @@ function setupEventListeners() {
         if (constructorsTabBtn) {
           constructorsTabBtn.classList.remove('active');
         }
-        getHistoricalDriverStandings(selectedHistoricalYear).then(driverStandings => {
-          renderHistoricalTable(historicalTableContainer, selectedHistoricalYear, 'drivers');
-        });
+        renderHistoricalTable(historicalTableContainer, selectedHistoricalYear, 'drivers');
       }
     });
   }
@@ -91,9 +99,7 @@ function setupEventListeners() {
         if (driversTabBtn) {
           driversTabBtn.classList.remove('active');
         }
-        getHistoricalConstructorStandings(selectedHistoricalYear).then(constructorStandings => {
-          renderHistoricalTable(historicalTableContainer, selectedHistoricalYear, 'constructors');
-        });
+        renderHistoricalTable(historicalTableContainer, selectedHistoricalYear, 'constructors');
       }
     });
   }
@@ -118,7 +124,7 @@ async function renderMainSection(year) {
       await renderNextRace(nextRaceContainer);
     }
     
-    // Renderizar previsualización de rankings DE ESTE AÑO (no el año seleccionado en el histórico)
+    // Renderizar previsualización de rankings DEL AÑO ANTERIOR AL ACTUAL
     if (driverStandingsPreview && constructorStandingsPreview) {
       renderStandingsPreview(driverStandingsPreview, constructorStandingsPreview, year);
     }
@@ -129,7 +135,7 @@ async function renderMainSection(year) {
 
 async function renderHistoricalSection(year, tab) {
   try {
-    // Renderizar tabla histórica en la sección inferior
+    // Renderizar tabla histórica en la sección inferior (también del año anterior al actual)
     if (historicalTableContainer) {
       renderHistoricalTable(historicalTableContainer, year, tab);
     }
@@ -144,8 +150,9 @@ function setupAutoRefresh() {
     const needsRefresh = checkCacheExpiration();
     if (needsRefresh) {
       console.log('Cache expired, refreshing...');
-      await renderMainSection(displayYear);
-      await renderHistoricalSection(selectedHistoricalYear, historicalTab);
+      const displayYearUpdated = currentYear - 1;
+      await renderMainSection(displayYearUpdated);
+      await renderHistoricalSection(displayYearUpdated, historicalTab);
     }
   }, 5 * 60 * 1000); // 5 minutos
 }
@@ -160,9 +167,12 @@ async function refreshAllData() {
   // Limpiar toda la cache
   cache.clear();
   
+  // Usar el año anterior al actual
+  const refreshedDisplayYear = currentYear - 1;
+  
   // Reconstruir componentes
-  await renderMainSection(displayYear);
-  await renderHistoricalSection(selectedHistoricalYear, historicalTab);
+  await renderMainSection(refreshedDisplayYear);
+  await renderHistoricalSection(refreshedDisplayYear, historicalTab);
 }
 
 // Exponer la función de refresh para que pueda ser usada por otros componentes
