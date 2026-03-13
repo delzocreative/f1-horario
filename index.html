@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F1 Dashboard LATAM</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>🏁 F1 Dashboard</h1>
+            <div class="header-controls">
+                <select id="year-selector" class="year-selector">
+                    <!-- Populated by JS -->
+                </select>
+                <button id="refresh-btn" class="refresh-btn" title="Actualizar datos">
+                    🔄
+                </button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Next Race Hero Slot -->
+            <div id="next-race-container" class="slot next-race-slot">
+                <div class="loading skeleton">
+                    <div class="skeleton-box"></div>
+                    <div class="skeleton-text"></div>
+                    <div class="skeleton-text short"></div>
+                </div>
+            </div>
+
+            <div class="secondary-grid">
+                <!-- Driver Standings Preview -->
+                <div id="driver-standings-preview" class="card standings-card skeleton">
+                    <h3 class="card-title">🏆 Pilotos</h3>
+                    <div class="skeleton-list">
+                        <div class="skeleton-item"></div>
+                        <div class="skeleton-item"></div>
+                        <div class="skeleton-item"></div>
+                    </div>
+                    <div class="skeleton-button"></div>
+                </div>
+
+                <!-- Constructor Standings Preview -->
+                <div id="constructor-standings-preview" class="card standings-card skeleton">
+                    <h3 class="card-title">🔧 Constructores</h3>
+                    <div class="skeleton-list">
+                        <div class="skeleton-item"></div>
+                        <div class="skeleton-item"></div>
+                        <div class="skeleton-item"></div>
+                    </div>
+                    <div class="skeleton-button"></div>
+                </div>
+            </div>
+
+            <!-- Historical Standings Section -->
+            <section class="historical-section">
+                <div class="historical-header">
+                    <h2>📋 Historial</h2>
+                    <div class="history-filter-controls">
+                        <button id="tab-drivers" class="tab-btn active">Pilotos</button>
+                        <button id="tab-constructors" class="tab-btn">Constructores</button>
+                    </div>
+                </div>
+                
+                <div id="historical-table-container" class="table-container">
+                    <div class="loading skeleton">
+                        <div class="skeleton-table-row"></div>
+                        <div class="skeleton-table-row"></div>
+                        <div class="skeleton-table-row"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal for Timezone Selector -->
+    <div class="timezone-modal" id="timezone-modal" hidden>
+        <div class="modal-backdrop" id="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🌎 Horarios Latinoamérica</h3>
+                <button class="modal-close" id="modal-close">✕</button>
+            </div>
+            <div class="modal-body" id="timezone-modal-body">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>

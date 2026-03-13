@@ -1,0 +1,11 @@
+{
+  "$schema": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/templates/next-json-schema.json",
+  "name": "f1-dashboard",
+  "compatibility_date": "2024-01-01",
+  "pages": {
+    "build": {
+      "output": "static"
+    }
+  },
+  "type": "javascript"
+}
