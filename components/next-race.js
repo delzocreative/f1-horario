@@ -23,14 +23,20 @@ export async function renderNextRace(container) {
     const races = await getNextRaces();
     
     if (!races || races.length === 0) {
-      container.innerHTML = '<p>No hay carreras programadas próximamente</p>';
+      container.innerHTML = `
+        <h3>🏁 Próxima Carrera</h3>
+        <p>No hay carreras programadas próximamente</p>
+      `;
       return;
     }
     
     const nextRace = races[0];
     
     if (!nextRace || !nextRace.Circuit) {
-      container.innerHTML = '<p>No se encontraron datos de la próxima carrera</p>';
+      container.innerHTML = `
+        <h3>🏁 Próxima Carrera</h3>
+        <p>No se encontraron datos de la próxima carrera</p>
+      `;
       return;
     }
     
@@ -39,7 +45,13 @@ export async function renderNextRace(container) {
     timezoneContainer.className = 'timezone-selector-container';
     
     container.innerHTML = '';
-    container.appendChild(createRaceElement(nextRace));
+    
+    // Título
+    container.insertAdjacentHTML('beforeend', `<h3>🏁 Próxima Carrera</h3>`);
+    
+    // Elemento de la carrera
+    const raceElement = createRaceElement(nextRace);
+    container.appendChild(raceElement);
     container.appendChild(timezoneContainer);
     
     // Inicializar el selector de zona horaria
@@ -54,7 +66,10 @@ export async function renderNextRace(container) {
     
   } catch (error) {
     console.error('Error rendering next race:', error);
-    container.innerHTML = '<p>Error cargando la próxima carrera</p>';
+    container.innerHTML = `
+      <h3>🏁 Próxima Carrera</h3>
+      <p>Error cargando la próxima carrera</p>
+    `;
   }
 }
 
@@ -70,8 +85,11 @@ function createRaceElement(race) {
       <img src="${race.circuitImage || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200"><rect fill="%231e293b" width="400" height="200"/><text fill="%2364748b" font-family="Arial" font-size="16" x="50" y="100">Imagen del circuito</text></svg>'}" 
            alt="${race.circuitName}" 
            loading="lazy"
-           onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400\" height=\"200\" viewBox=\"0 0 400 200\"><rect fill=\"%231e293b\" width=\"400\" height=\"200\"/><text fill=\"%2364748b\" font-family=\"Arial\" font-size=\"16\" x=\"50\" y=\"100\">Imagen del circuito</text></svg>'" />
-      <img src="${getFlagUrl(countryCode, 32)}" alt="${race.Circuit.Location.country}" class="race-flag" onerror="this.src='https://flagcdn.com/w20/xx.png';this.style.display='none';" />
+           onerror="this.src='data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"400\" height=\"200\" viewBox=\"0 0 400 200\"><rect fill=\"%231e293b\" width=\"400\" height=\"200\"/><text fill=\"%2364748b\" font-family=\"Arial\" font-size=\"16\" x=\"50\" y=\"100\">Imagen del circuito</text></svg>'; this.classList.add('placeholder');"
+           style="object-fit: cover; width: 100%; height: 100%;" />
+      <img src="${getFlagUrl(countryCode, 32)}" alt="${race.Circuit.Location.country}" class="race-flag" 
+           onerror="this.src='https://flagcdn.com/w20/xx.png';this.style.display='none';" 
+           style="position: absolute; top: 0.5rem; right: 0.5rem; border-radius: 0.25rem; border: 2px solid white; width: 32px; height: 24px; z-index: 2;" />
     </div>
     
     <div class="race-info">
@@ -90,7 +108,7 @@ function createRaceElement(race) {
   (async () => {
     try {
       const circuitImageUrl = await getCircuitImageUrl(race.Circuit.circuitName);
-      const imgElement = container.querySelector('.race-image-container img');
+      const imgElement = container.querySelector('.race-image-container img:not(.race-flag)');
       if (imgElement && imgElement.src.includes('Imagen del circuito')) {
         imgElement.src = circuitImageUrl;
       }

@@ -1,6 +1,7 @@
 import { getFlagUrl, getCountryCode } from '../utils/flags.js';
 import { getDriverStandings, getConstructorStandings } from '../api/client.js';
 
+// Esta función renderiza los rankings del año actual, NO del año histórico
 export function renderStandingsPreview(driverContainer, constructorContainer, year = null) {
   // Mostrar skeletons mientras cargan los datos
   renderDriverSkeleton(driverContainer);
@@ -17,15 +18,15 @@ export function renderStandingsPreview(driverContainer, constructorContainer, ye
   })
   .catch(error => {
     console.error('Error loading standings:', error);
-    driverContainer.innerHTML = '<p>Error cargando datos</p>';
-    constructorContainer.innerHTML = '<p>Error cargando datos</p>';
+    driverContainer.innerHTML = '<h3 class="card-title">🏆 Pilotos (Año Actual)</h3><p>Error cargando datos</p>';
+    constructorContainer.innerHTML = '<h3 class="card-title">🔧 Constructores (Año Actual)</h3><p>Error cargando datos</p>';
   });
 }
 
 function renderDriverSkeleton(container) {
   container.innerHTML = `
     <div class="skeleton">
-      <h3 class="card-title">🏆 Pilotos</h3>
+      <h3 class="card-title">🏆 Pilotos (Año Actual)</h3>
       <div class="skeleton-list">
         <div class="skeleton-item"></div>
         <div class="skeleton-item"></div>
@@ -39,7 +40,7 @@ function renderDriverSkeleton(container) {
 function renderConstructorSkeleton(container) {
   container.innerHTML = `
     <div class="skeleton">
-      <h3 class="card-title">🔧 Constructores</h3>
+      <h3 class="card-title">🔧 Constructores (Año Actual)</h3>
       <div class="skeleton-list">
         <div class="skeleton-item"></div>
         <div class="skeleton-item"></div>
@@ -52,12 +53,12 @@ function renderConstructorSkeleton(container) {
 
 function renderDriverStandings(container, driverStandings, year = null) {
   if (!driverStandings || !Array.isArray(driverStandings)) {
-    container.innerHTML = '<p>No hay datos disponibles</p>';
+    container.innerHTML = '<h3 class="card-title">🏆 Pilotos (Año Actual)</h3><p>No hay datos disponibles</p>';
     return;
   }
 
   container.innerHTML = `
-    <h3 class="card-title">🏆 Pilotos</h3>
+    <h3 class="card-title">🏆 Pilotos (${year || new Date().getFullYear()})</h3>
     <div class="standings-list">
       ${driverStandings.slice(0, 3).map((standing, idx) => {
         const position = parseInt(standing.position);
@@ -83,18 +84,17 @@ function renderDriverStandings(container, driverStandings, year = null) {
         `;
       }).join('')}
     </div>
-    <a href="#historical-table-container" class="standing-more-link" onclick="switchTab('drivers')">→ Ver ranking completo</a>
   `;
 }
 
 function renderConstructorStandings(container, constructorStandings, year = null) {
   if (!constructorStandings || !Array.isArray(constructorStandings)) {
-    container.innerHTML = '<p>No hay datos disponibles</p>';
+    container.innerHTML = '<h3 class="card-title">🔧 Constructores (Año Actual)</h3><p>No hay datos disponibles</p>';
     return;
   }
 
   container.innerHTML = `
-    <h3 class="card-title">🔧 Constructores</h3>
+    <h3 class="card-title">🔧 Constructores (${year || new Date().getFullYear()})</h3>
     <div class="standings-list">
       ${constructorStandings.slice(0, 3).map((standing, idx) => {
         const position = parseInt(standing.position);
@@ -118,25 +118,5 @@ function renderConstructorStandings(container, constructorStandings, year = null
         `;
       }).join('')}
     </div>
-    <a href="#historical-table-container" class="standing-more-link" onclick="switchTab('constructors')">→ Ver ranking completo</a>
   `;
 }
-
-// Función para cambiar de pestaña en la tabla histórica
-window.switchTab = function(tab) {
-  const driverBtn = document.getElementById('tab-drivers');
-  const constructorBtn = document.getElementById('tab-constructors');
-  
-  if (tab === 'drivers') {
-    driverBtn.classList.add('active');
-    constructorBtn.classList.remove('active');
-  } else if (tab === 'constructors') {
-    constructorBtn.classList.add('active');
-    driverBtn.classList.remove('active');
-  }
-  
-  // Hacer scroll hacia la sección de tablas
-  document.getElementById('historical-table-container').scrollIntoView({
-    behavior: 'smooth'
-  });
-};

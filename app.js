@@ -4,13 +4,23 @@ import { renderStandingsPreview } from './components/standings-preview.js';
 import { renderHistoricalTable } from './components/standings-table.js';
 import { renderHeader, populateYearSelector } from './components/header.js';
 import { cache } from './utils/cache.js';
-import { getNextRaces, getDriverStandings, getConstructorStandings, getYears } from './api/client.js';
+import { getNextRaces, getDriverStandings, getConstructorStandings } from './api/client.js';
 
 // Variables de estado
 let currentYear = new Date().getFullYear();
-let currentTab = 'drivers';
+// Mostrar el último año con datos (si estamos en 2026, mostrar 2025)
+let displayYear = currentYear; 
 
-// Elementos DOM
+// Variables globales para poder actualizar las tablas por separado
+let selectedHistoricalYear = null;
+let historicalTab = 'drivers';
+
+// Elementos DOM (reescribiendo la estructura de carga)
+const container = document.querySelector('.container');
+const headerContainer = container.querySelector('.header');
+const mainContent = container.querySelector('.main-content');
+
+// Obtener elementos de las secciones principales
 const nextRaceContainer = document.getElementById('next-race-container');
 const driverStandingsPreview = document.getElementById('driver-standings-preview');
 const constructorStandingsPreview = document.getElementById('constructor-standings-preview');
@@ -19,19 +29,27 @@ const historicalTableContainer = document.getElementById('historical-table-conta
 // Inicializar aplicación
 async function init() {
   try {
-    // Populating year selector
-    const availableYears = await populateYearSelector(currentYear);
-    
-    // Actualizar currentYear si está disponible o ajustarlo al más reciente
-    if (!availableYears.includes(currentYear)) {
-      currentYear = availableYears[0] || new Date().getFullYear();
+    // Ajustar el año a mostrar: usar el más reciente con datos
+    if (currentYear >= 2020) {
+      displayYear = currentYear - 1; // Mostrar el último año con datos
+    } else {
+      displayYear = currentYear; // En caso extremo
     }
     
+    // Populating year selector
+    const availableYears = await populateYearSelector(displayYear);
+    
+    // Actualizar selectedHistoricalYear con el disponible más reciente
+    if (availableYears.length > 0 && !selectedHistoricalYear) {
+      selectedHistoricalYear = availableYears[0]; // Año más reciente
+    }
+
     // Configurar eventos
     setupEventListeners();
     
-    // Renderizar componentes iniciales
-    await renderAllComponents(currentYear);
+    // Renderizar componentes iniciales en el nuevo orden
+    await renderMainSection(displayYear); // Sección principal: horario + standings actuales
+    await renderHistoricalSection(selectedHistoricalYear, historicalTab); // Sección histórica
     
     // Configurar auto-refresh
     setupAutoRefresh();
@@ -42,12 +60,12 @@ async function init() {
 }
 
 function setupEventListeners() {
-  // Cambio de año
+  // Cambio de año para la sección histórica (no para la sección actual)
   const yearSelector = document.getElementById('year-selector');
   if (yearSelector) {
     yearSelector.addEventListener('change', (e) => {
-      currentYear = parseInt(e.target.value);
-      renderAllComponents(currentYear);
+      selectedHistoricalYear = parseInt(e.target.value);
+      renderHistoricalTable(historicalTableContainer, selectedHistoricalYear, historicalTab);
     });
   }
   
@@ -57,22 +75,22 @@ function setupEventListeners() {
   
   if (driversTabBtn) {
     driversTabBtn.addEventListener('click', () => {
-      if (currentTab !== 'drivers') {
-        currentTab = 'drivers';
+      if (historicalTab !== 'drivers') {
+        historicalTab = 'drivers';
         driversTabBtn.classList.add('active');
         constructorsTabBtn.classList.remove('active');
-        renderHistoricalTable(historicalTableContainer, currentYear, 'drivers');
+        renderHistoricalTable(historicalTableContainer, selectedHistoricalYear, 'drivers');
       }
     });
   }
   
   if (constructorsTabBtn) {
     constructorsTabBtn.addEventListener('click', () => {
-      if (currentTab !== 'constructors') {
-        currentTab = 'constructors';
+      if (historicalTab !== 'constructors') {
+        historicalTab = 'constructors';
         constructorsTabBtn.classList.add('active');
         driversTabBtn.classList.remove('active');
-        renderHistoricalTable(historicalTableContainer, currentYear, 'constructors');
+        renderHistoricalTable(historicalTableContainer, selectedHistoricalYear, 'constructors');
       }
     });
   }
@@ -89,24 +107,30 @@ function setupEventListeners() {
   });
 }
 
-async function renderAllComponents(year) {
+async function renderMainSection(year) {
   try {
-    // Renderizar componente de carrera siguiente
+    // Renderizar componente de carrera siguiente (primer elemento)
     if (nextRaceContainer) {
       await renderNextRace(nextRaceContainer);
     }
     
-    // Renderizar previsualización de rankings
+    // Renderizar previsualización de rankings DE ESTE AÑO (no el año seleccionado en el histórico)
     if (driverStandingsPreview && constructorStandingsPreview) {
-      renderStandingsPreview(driverStandingsPreview, constructorStandingsPreview, year);
-    }
-    
-    // Renderizar tabla histórica
-    if (historicalTableContainer) {
-      renderHistoricalTable(historicalTableContainer, year, currentTab);
+      renderStandingsPreview(driverStandingsPreview, constructorStandingsPreview, displayYear);
     }
   } catch (error) {
-    console.error('Error rendering components:', error);
+    console.error('Error rendering main section:', error);
+  }
+}
+
+async function renderHistoricalSection(year, tab) {
+  try {
+    // Renderizar tabla histórica en la sección inferior
+    if (historicalTableContainer) {
+      renderHistoricalTable(historicalTableContainer, year, tab);
+    }
+  } catch (error) {
+    console.error('Error rendering historical section:', error);
   }
 }
 
@@ -116,14 +140,14 @@ function setupAutoRefresh() {
     const needsRefresh = checkCacheExpiration();
     if (needsRefresh) {
       console.log('Cache expired, refreshing...');
-      await renderAllComponents(currentYear);
+      await renderMainSection(displayYear);
+      await renderHistoricalSection(selectedHistoricalYear, historicalTab);
     }
   }, 5 * 60 * 1000); // 5 minutos
 }
 
 function checkCacheExpiration() {
-  // En realidad podríamos verificar si los datos en caché han expirado
-  // pero para simplificar, podríamos siempre verificar periódicamente
+  // Verificar si ha expirado el caché para actualizar datos periódicamente
   return true; // Simplificación para el ejemplo
 }
 
@@ -133,7 +157,8 @@ async function refreshAllData() {
   cache.clear();
   
   // Reconstruir componentes
-  await renderAllComponents(currentYear);
+  await renderMainSection(displayYear);
+  await renderHistoricalSection(selectedHistoricalYear, historicalTab);
 }
 
 // Exponer la función de refresh para que pueda ser usada por otros componentes
