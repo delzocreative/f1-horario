@@ -1,0 +1,41 @@
+{
+  "name": "F1 Dashboard LATAM",
+  "short_name": "F1 LATAM",
+  "description": "Horarios de Formula 1 para Latinoamerica",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%230f172a'/%3E%3Ctext x='256' y='350' text-anchor='middle' font-size='300' font-family='Arial'%3E🏁%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%230f172a'/%3E%3Ctext x='96' y='130' text-anchor='middle' font-size='100' font-family='Arial'%3E🏁%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%230f172a'/%3E%3Ctext x='256' y='350' text-anchor='middle' font-size='300' font-family='Arial'%3E🏁%3C/text%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["sports", "entertainment"],
+  "shortcuts": [
+    {
+      "name": "Proximo GP",
+      "short_name": "Proximo",
+      "description": "Ver el proximo Gran Premio",
+      "url": "/index.html"
+    }
+  ]
+}

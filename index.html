@@ -1,102 +1,687 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>F1 Dashboard LATAM</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="description" content="Horarios de Formula 1 para Latinoamerica - Proximo Gran Premio">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>F1 Grand Prix LATAM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: { f1: { red: '#e10600' } }
+        }
+      }
+    }
+  </script>
+  <style>
+    .skeleton { animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    .fade-in { animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    dialog::backdrop { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(4px); }
+    dialog { animation: slideUp 0.3s ease-out; }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .session-row { transition: background-color 0.2s; }
+    .session-row:hover { background-color: rgba(51, 65, 85, 0.5); }
+    .session-row.next { background-color: rgba(225, 6, 0, 0.15); border-left: 3px solid #e10600; }
+  </style>
 </head>
-<body>
-    <div class="container">
-        <header class="header">
-            <h1>🏁 F1 Dashboard</h1>
-            <div class="header-controls">
-                <button id="refresh-btn" class="refresh-btn" title="Actualizar datos">
-                    🔄
-                </button>
-            </div>
-        </header>
-
-        <main class="main-content">
-            <!-- Sección Principal: Horario y standings actuales -->
-            <section class="main-section">
-                <div class="primary-secondary-layout">
-                    <!-- Next Race Slot -->
-                    <div id="next-race-container" class="slot next-race-slot">
-                        <div class="loading skeleton">
-                            <div class="skeleton-box"></div>
-                            <div class="skeleton-text"></div>
-                            <div class="skeleton-text short"></div>
-                        </div>
-                    </div>
-
-                    <div class="secondary-grid-top">
-                        <!-- Driver Standings Preview (Del año actual) -->
-                        <div id="driver-standings-preview" class="card standings-card skeleton">
-                            <h3 class="card-title">🏆 Pilotos (Año Actual)</h3>
-                            <div class="skeleton-list">
-                                <div class="skeleton-item"></div>
-                                <div class="skeleton-item"></div>
-                                <div class="skeleton-item"></div>
-                            </div>
-                            <div class="skeleton-button"></div>
-                        </div>
-
-                        <!-- Constructor Standings Preview (Del año actual) -->
-                        <div id="constructor-standings-preview" class="card standings-card skeleton">
-                            <h3 class="card-title">🔧 Constructores (Año Actual)</h3>
-                            <div class="skeleton-list">
-                                <div class="skeleton-item"></div>
-                                <div class="skeleton-item"></div>
-                                <div class="skeleton-item"></div>
-                            </div>
-                            <div class="skeleton-button"></div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Historical Standings Section (abajo) -->
-            <section class="historical-section">
-                <div class="historical-header">
-                    <h2>📋 Historial</h2>
-                    <div class="header-controls-secondary">
-                        <select id="year-selector" class="year-selector">
-                            <!-- Populated by JS -->
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="history-filter-controls">
-                    <button id="tab-drivers" class="tab-btn active">Pilotos</button>
-                    <button id="tab-constructors" class="tab-btn">Constructores</button>
-                </div>
-                
-                <div id="historical-table-container" class="table-container">
-                    <div class="loading skeleton">
-                        <div class="skeleton-table-row"></div>
-                        <div class="skeleton-table-row"></div>
-                        <div class="skeleton-table-row"></div>
-                    </div>
-                </div>
-            </section>
-        </main>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans">
+  <header class="sticky top-0 z-40 bg-slate-900/95 backdrop-blur border-b border-slate-700">
+    <div class="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+      <h1 class="text-lg font-bold flex items-center gap-2">
+        <span class="text-2xl">🏁</span>
+        <span>F1 LATAM</span>
+      </h1>
+      <div class="flex items-center gap-2">
+        <button id="theme-toggle" class="p-2 hover:bg-slate-800 rounded-lg transition-colors" aria-label="Cambiar tema">
+          <svg id="theme-icon-dark" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+          </svg>
+          <svg id="theme-icon-light" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+          </svg>
+        </button>
+        <button id="refresh-btn" class="p-2 hover:bg-slate-800 rounded-lg transition-colors" aria-label="Actualizar">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+        </button>
+      </div>
     </div>
+  </header>
 
-    <!-- Modal for Timezone Selector -->
-    <div class="timezone-modal" id="timezone-modal" hidden>
-        <div class="modal-backdrop" id="modal-backdrop"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>🌎 Horarios Latinoamérica</h3>
-                <button class="modal-close" id="modal-close">✕</button>
-            </div>
-            <div class="modal-body" id="timezone-modal-body">
-                <!-- Populated by JS -->
-            </div>
+  <main class="max-w-lg mx-auto px-4 py-6 space-y-6">
+    <!-- Skeleton Loader -->
+    <div id="skeleton-loader" class="space-y-6">
+      <div class="bg-slate-800 rounded-2xl overflow-hidden">
+        <div class="aspect-video bg-slate-700 skeleton"></div>
+        <div class="p-5 space-y-3">
+          <div class="h-7 bg-slate-700 rounded skeleton w-3/4"></div>
+          <div class="h-4 bg-slate-700 rounded skeleton w-1/2"></div>
+          <div class="h-12 bg-slate-700 rounded skeleton"></div>
         </div>
+      </div>
+      <div class="bg-slate-800 rounded-xl p-5">
+        <div class="h-5 bg-slate-700 rounded skeleton w-1/2 mb-4"></div>
+        <div class="space-y-2">
+          <div class="h-12 bg-slate-700 rounded skeleton"></div>
+          <div class="h-12 bg-slate-700 rounded skeleton"></div>
+          <div class="h-12 bg-slate-700 rounded skeleton"></div>
+        </div>
+      </div>
     </div>
 
-    <script type="module" src="app.js"></script>
+    <!-- Main Content -->
+    <div id="main-content" class="hidden space-y-6">
+      <!-- Race Header Card -->
+      <section class="bg-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div class="relative aspect-video bg-slate-700">
+          <img id="circuit-image" class="w-full h-full object-contain" alt="Circuito" loading="lazy" />
+          <img id="country-flag" class="absolute top-3 right-3 w-12 h-8 rounded border-2 border-white/80 shadow-lg object-cover" alt="Bandera" />
+          <div id="circuit-placeholder" class="hidden absolute inset-0 flex items-center justify-center bg-slate-700">
+            <svg class="w-32 h-32 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+            </svg>
+          </div>
+        </div>
+        
+        <div class="p-5">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h2 id="race-name" class="text-2xl font-bold text-white"></h2>
+              <p id="circuit-location" class="text-slate-400 text-sm mt-1"></p>
+            </div>
+            <div id="countdown-box" class="text-right shrink-0">
+              <p class="text-xs text-slate-400">Comienza en</p>
+              <p id="countdown" class="text-f1-red font-mono font-bold text-lg"></p>
+            </div>
+          </div>
+
+          <!-- Country Selector -->
+          <button id="select-country-btn" class="mt-4 w-full bg-slate-700/50 rounded-xl p-3 flex items-center justify-between hover:bg-slate-700 transition-colors">
+            <div class="flex items-center gap-3">
+              <img id="selected-flag" class="w-8 h-6 rounded border border-slate-600 object-cover" alt="Pais" />
+              <div class="text-left">
+                <p id="selected-country" class="font-semibold text-white"></p>
+                <p id="selected-timezone" class="text-xs text-slate-400"></p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="weather-mini" class="text-sm text-slate-300"></span>
+              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </div>
+          </button>
+        </div>
+      </section>
+
+      <!-- Schedule Table -->
+      <section class="bg-slate-800 rounded-xl overflow-hidden">
+        <div class="px-5 py-4 border-b border-slate-700">
+          <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+            <svg class="w-5 h-5 text-f1-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Horarios del Fin de Semana
+          </h3>
+        </div>
+        <div id="schedule-list" class="divide-y divide-slate-700/50"></div>
+      </section>
+
+      <!-- Circuit Info -->
+      <section id="circuit-info" class="bg-slate-800 rounded-xl p-5 hidden fade-in">
+        <h3 class="text-lg font-semibold mb-4 flex items-center gap-2 text-white">
+          <svg class="w-5 h-5 text-f1-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Informacion del Circuito
+        </h3>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-slate-700/50 rounded-lg p-3">
+            <p class="text-xs text-slate-400">Longitud</p>
+            <p id="track-length" class="font-semibold text-white"></p>
+          </div>
+          <div class="bg-slate-700/50 rounded-lg p-3">
+            <p class="text-xs text-slate-400">Vueltas</p>
+            <p id="race-laps" class="font-semibold text-white"></p>
+          </div>
+          <div class="bg-slate-700/50 rounded-lg p-3">
+            <p class="text-xs text-slate-400">Distancia</p>
+            <p id="race-distance" class="font-semibold text-white"></p>
+          </div>
+          <div class="bg-slate-700/50 rounded-lg p-3">
+            <p class="text-xs text-slate-400">Record Vuelta</p>
+            <p id="lap-record" class="font-semibold text-white"></p>
+          </div>
+        </div>
+        <p id="record-holder" class="text-xs text-slate-400 mt-3"></p>
+      </section>
+    </div>
+  </main>
+
+  <footer class="max-w-lg mx-auto px-4 py-8 text-center text-slate-500 text-xs">
+    <p>Datos oficiales de Formula 1</p>
+    <p class="mt-1">Hecho para fans de F1 en LATAM</p>
+  </footer>
+
+  <!-- Country Modal -->
+  <dialog id="country-modal" class="w-full max-w-lg mx-auto h-full md:h-auto md:max-h-[90vh] md:rounded-2xl bg-slate-900 text-slate-100 border-0">
+    <div class="flex flex-col h-full">
+      <div class="flex items-center justify-between p-4 border-b border-slate-700 sticky top-0 bg-slate-900 z-10">
+        <h3 class="text-lg font-semibold text-white">Seleccionar Pais</h3>
+        <button id="close-modal" class="p-2 hover:bg-slate-800 rounded-lg transition-colors" aria-label="Cerrar">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div id="country-list" class="flex-1 overflow-y-auto p-2"></div>
+    </div>
+  </dialog>
+
+  <script>
+const CONFIG = {
+  TTL: { RACE: 8 * 60 * 60 * 1000, WEATHER: 30 * 60 * 1000 },
+  AUTO_REFRESH: 8 * 60 * 60 * 1000
+};
+
+const SESSION_NAMES = {
+  'FirstPractice': { name: 'Practica 1', short: 'FP1', icon: '🏎️' },
+  'SecondPractice': { name: 'Practica 2', short: 'FP2', icon: '🏎️' },
+  'ThirdPractice': { name: 'Practica 3', short: 'FP3', icon: '🏎️' },
+  'SprintQualifying': { name: 'Sprint Qualy', short: 'SQ', icon: '⚡' },
+  'Sprint': { name: 'Sprint', short: 'Sprint', icon: '🏃' },
+  'Qualifying': { name: 'Clasificacion', short: 'Qualy', icon: '🎯' },
+  'Race': { name: 'Carrera', short: 'Race', icon: '🏁' }
+};
+
+const SESSION_ORDER = ['FirstPractice', 'SecondPractice', 'SprintQualifying', 'Sprint', 'ThirdPractice', 'Qualifying', 'Race'];
+
+const LATAM_COUNTRIES = [
+  { code: 'ar', name: 'Argentina', timezone: 'America/Argentina/Buenos_Aires' },
+  { code: 'bo', name: 'Bolivia', timezone: 'America/La_Paz' },
+  { code: 'br', name: 'Brasil', timezone: 'America/Sao_Paulo' },
+  { code: 'cl', name: 'Chile', timezone: 'America/Santiago' },
+  { code: 'co', name: 'Colombia', timezone: 'America/Bogota' },
+  { code: 'cr', name: 'Costa Rica', timezone: 'America/Costa_Rica' },
+  { code: 'cu', name: 'Cuba', timezone: 'America/Havana' },
+  { code: 'ec', name: 'Ecuador', timezone: 'America/Guayaquil' },
+  { code: 'sv', name: 'El Salvador', timezone: 'America/El_Salvador' },
+  { code: 'gt', name: 'Guatemala', timezone: 'America/Guatemala' },
+  { code: 'hn', name: 'Honduras', timezone: 'America/Tegucigalpa' },
+  { code: 'mx', name: 'Mexico', timezone: 'America/Mexico_City' },
+  { code: 'ni', name: 'Nicaragua', timezone: 'America/Managua' },
+  { code: 'pa', name: 'Panama', timezone: 'America/Panama' },
+  { code: 'py', name: 'Paraguay', timezone: 'America/Asuncion' },
+  { code: 'pe', name: 'Peru', timezone: 'America/Lima' },
+  { code: 'do', name: 'Rep. Dominicana', timezone: 'America/Santo_Domingo' },
+  { code: 'uy', name: 'Uruguay', timezone: 'America/Montevideo' },
+  { code: 've', name: 'Venezuela', timezone: 'America/Caracas' }
+];
+
+const CIRCUIT_DATA = {
+  'albert_park': { length: 5.303, laps: 58, record: '1:19.813', holder: 'Charles Leclerc (2024)' },
+  'bahrain': { length: 5.412, laps: 57, record: '1:31.447', holder: 'Pedro de la Rosa (2005)' },
+  'shanghai': { length: 5.451, laps: 56, record: '1:32.238', holder: 'Michael Schumacher (2004)' },
+  'suzuka': { length: 5.807, laps: 53, record: '1:30.983', holder: 'Lewis Hamilton (2019)' },
+  'jeddah': { length: 6.175, laps: 50, record: '1:30.734', holder: 'Lewis Hamilton (2021)' },
+  'miami': { length: 5.412, laps: 57, record: '1:29.708', holder: 'Max Verstappen (2023)' },
+  'imola': { length: 4.909, laps: 63, record: '1:15.484', holder: 'Lewis Hamilton (2020)' },
+  'monaco': { length: 3.337, laps: 78, record: '1:12.909', holder: 'Lewis Hamilton (2021)' },
+  'catalunya': { length: 4.657, laps: 66, record: '1:16.330', holder: 'Max Verstappen (2023)' },
+  'villeneuve': { length: 4.361, laps: 70, record: '1:13.078', holder: 'Valtteri Bottas (2019)' },
+  'red_bull_ring': { length: 4.318, laps: 71, record: '1:05.619', holder: 'Carlos Sainz (2020)' },
+  'silverstone': { length: 5.891, laps: 52, record: '1:27.097', holder: 'Max Verstappen (2023)' },
+  'spa': { length: 7.004, laps: 44, record: '1:46.286', holder: 'Valtteri Bottas (2018)' },
+  'hungaroring': { length: 4.381, laps: 70, record: '1:16.627', holder: 'Max Verstappen (2023)' },
+  'zandvoort': { length: 4.259, laps: 72, record: '1:11.097', holder: 'Lewis Hamilton (2021)' },
+  'monza': { length: 5.793, laps: 53, record: '1:21.046', holder: 'Rubens Barrichello (2004)' },
+  'baku': { length: 6.003, laps: 51, record: '1:43.009', holder: 'Charles Leclerc (2019)' },
+  'marina_bay': { length: 4.940, laps: 62, record: '1:35.867', holder: 'Lewis Hamilton (2023)' },
+  'americas': { length: 5.513, laps: 56, record: '1:36.169', holder: 'Charles Leclerc (2019)' },
+  'rodriguez': { length: 4.304, laps: 71, record: '1:17.774', holder: 'Valtteri Bottas (2021)' },
+  'interlagos': { length: 4.309, laps: 71, record: '1:10.540', holder: 'Max Verstappen (2023)' },
+  'vegas': { length: 6.201, laps: 50, record: '1:35.490', holder: 'Oscar Piastri (2024)' },
+  'losail': { length: 5.419, laps: 57, record: '1:24.319', holder: 'Max Verstappen (2023)' },
+  'yas_marina': { length: 5.284, laps: 58, record: '1:26.103', holder: 'Max Verstappen (2021)' }
+};
+
+const WIKI_CIRCUIT_MAP = {
+  'albert_park': 'Albert_Park_Circuit', 'bahrain': 'Bahrain_International_Circuit',
+  'shanghai': 'Shanghai_International_Circuit', 'suzuka': 'Suzuka_International_Racing_Course',
+  'jeddah': 'Jeddah_Corniche_Circuit', 'miami': 'Miami_International_Autodrome',
+  'imola': 'Imola_Circuit', 'monaco': 'Circuit_de_Monaco',
+  'catalunya': 'Circuit_de_Barcelona-Catalunya', 'villeneuve': 'Circuit_Gilles_Villeneuve',
+  'red_bull_ring': 'Red_Bull_Ring', 'silverstone': 'Silverstone_Circuit',
+  'spa': 'Circuit_de_Spa-Francorchamps', 'hungaroring': 'Hungaroring',
+  'zandvoort': 'Circuit_Zandvoort', 'monza': 'Monza_Circuit',
+  'baku': 'Baku_City_Circuit', 'marina_bay': 'Marina_Bay_Street_Circuit',
+  'americas': 'Circuit_of_the_Americas', 'rodriguez': 'Autodromo_Hermanos_Rodriguez',
+  'interlagos': 'Interlagos_Circuit', 'vegas': 'Las_Vegas_Grand_Prix',
+  'losail': 'Lusail_International_Circuit', 'yas_marina': 'Yas_Marina_Circuit'
+};
+
+const COUNTRY_NAME_MAP = {
+  'Australia': 'au', 'Azerbaijan': 'az', 'Bahrain': 'bh', 'Belgium': 'be', 'Brazil': 'br',
+  'Canada': 'ca', 'China': 'cn', 'France': 'fr', 'Germany': 'de', 'Hungary': 'hu',
+  'Italy': 'it', 'Japan': 'jp', 'Mexico': 'mx', 'Monaco': 'mc', 'Netherlands': 'nl',
+  'Portugal': 'pt', 'Qatar': 'qa', 'Saudi Arabia': 'sa', 'Singapore': 'sg', 'Spain': 'es',
+  'UAE': 'ae', 'UK': 'gb', 'USA': 'us', 'Austria': 'at'
+};
+
+let state = { race: null, sessions: [], selectedCountry: null, darkMode: true, countdownInterval: null, weather: null };
+
+const $ = id => document.getElementById(id);
+
+function detectCountry() {
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const country = LATAM_COUNTRIES.find(c => c.timezone === timezone);
+  const saved = localStorage.getItem('f1_selected_country');
+  return (saved && LATAM_COUNTRIES.find(c => c.code === saved)) ? saved : (country?.code || 'ar');
+}
+
+function getFlagUrl(code, size = 40) {
+  return `https://flagpedia.net/data/flags/w80/${code}.png`;
+}
+
+function formatTime(date, timezone) {
+  return date.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: timezone });
+}
+
+function formatDay(date, timezone) {
+  return date.toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', timeZone: timezone });
+}
+
+function getUTCOffset(timezone) {
+  const now = new Date();
+  const utc = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
+  const local = new Date(now.toLocaleString('en-US', { timeZone: timezone }));
+  const diff = (local - utc) / (60 * 60 * 1000);
+  return `UTC${diff >= 0 ? '+' : ''}${diff}`;
+}
+
+function getCountryCode(countryName) {
+  return COUNTRY_NAME_MAP[countryName] || 'xx';
+}
+
+function getCircuitWikiName(circuitId) {
+  return WIKI_CIRCUIT_MAP[circuitId] || circuitId;
+}
+
+function getSessions(race) {
+  const sessions = [];
+  
+  if (race.FirstPractice) {
+    sessions.push({ key: 'FirstPractice', date: race.FirstPractice.date, time: race.FirstPractice.time });
+  }
+  if (race.SecondPractice) {
+    sessions.push({ key: 'SecondPractice', date: race.SecondPractice.date, time: race.SecondPractice.time });
+  }
+  if (race.SprintQualifying) {
+    sessions.push({ key: 'SprintQualifying', date: race.SprintQualifying.date, time: race.SprintQualifying.time });
+  }
+  if (race.Sprint) {
+    sessions.push({ key: 'Sprint', date: race.Sprint.date, time: race.Sprint.time });
+  }
+  if (race.ThirdPractice) {
+    sessions.push({ key: 'ThirdPractice', date: race.ThirdPractice.date, time: race.ThirdPractice.time });
+  }
+  if (race.Qualifying) {
+    sessions.push({ key: 'Qualifying', date: race.Qualifying.date, time: race.Qualifying.time });
+  }
+  
+  sessions.push({ key: 'Race', date: race.date, time: race.time });
+  
+  return sessions.sort((a, b) => {
+    const dateA = new Date(`${a.date}T${a.time}`);
+    const dateB = new Date(`${b.date}T${b.time}`);
+    return dateA - dateB;
+  });
+}
+
+async function fetchRace() {
+  const cacheKey = 'f1_race_data';
+  const cacheTimeKey = 'f1_race_data_time';
+  const cached = localStorage.getItem(cacheKey);
+  const cacheTime = localStorage.getItem(cacheTimeKey);
+  
+  if (cached && cacheTime && (Date.now() - parseInt(cacheTime)) < CONFIG.TTL.RACE) {
+    return JSON.parse(cached);
+  }
+  
+  const currentYear = new Date().getFullYear();
+  const response = await fetch(`https://api.jolpi.ca/ergast/f1/${currentYear}.json`);
+  const data = await response.json();
+  
+  if (!data?.MRData?.RaceTable?.Races) throw new Error('No race data');
+  
+  const races = data.MRData.RaceTable.Races;
+  const now = new Date();
+  
+  const upcoming = races.filter(r => new Date(`${r.date}T${r.time}`) > now);
+  const nextRace = upcoming[0];
+  
+  if (!nextRace) return null;
+  
+  localStorage.setItem(cacheKey, JSON.stringify(nextRace));
+  localStorage.setItem(cacheTimeKey, Date.now().toString());
+  
+  return nextRace;
+}
+
+async function fetchCircuitImage(circuitId) {
+  const cacheKey = `f1_circuit_${circuitId}`;
+  const cached = localStorage.getItem(cacheKey);
+  if (cached) return cached;
+  
+  try {
+    const response = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${getCircuitWikiName(circuitId)}`, {
+      headers: { 'User-Agent': 'F1-Dashboard-LATAM/1.0' }
+    });
+    const data = await response.json();
+    if (data?.thumbnail?.source) {
+      localStorage.setItem(cacheKey, data.thumbnail.source);
+      return data.thumbnail.source;
+    }
+  } catch (e) {}
+  return null;
+}
+
+async function fetchWeather(city) {
+  try {
+    const response = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1&lang=es`);
+    const data = await response.json();
+    return data?.current_condition?.[0] || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function renderSchedule() {
+  const countryData = LATAM_COUNTRIES.find(c => c.code === state.selectedCountry) || LATAM_COUNTRIES[0];
+  const now = new Date();
+  
+  let nextSessionFound = false;
+  
+  const html = state.sessions.map(session => {
+    const sessionDate = new Date(`${session.date}T${session.time}`);
+    const isPast = sessionDate < now;
+    const isNext = !isPast && !nextSessionFound;
+    if (isNext) nextSessionFound = true;
+    
+    const info = SESSION_NAMES[session.key];
+    const localTime = formatTime(sessionDate, countryData.timezone);
+    const day = formatDay(sessionDate, countryData.timezone);
+    
+    return `
+      <div class="session-row px-5 py-3 ${isNext ? 'next' : ''} ${isPast ? 'opacity-50' : ''}">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="text-lg">${info.icon}</span>
+            <div>
+              <p class="font-medium text-white ${session.key === 'Race' ? 'text-f1-red' : ''}">${info.name}</p>
+              <p class="text-xs text-slate-400">${day}</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="font-bold text-lg ${session.key === 'Race' ? 'text-f1-red' : 'text-white'}">${localTime}</p>
+            ${isNext ? '<p class="text-xs text-f1-red font-medium">Proxima</p>' : ''}
+            ${isPast ? '<p class="text-xs text-slate-500">Finalizada</p>' : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  $('schedule-list').innerHTML = html;
+}
+
+function renderRace() {
+  if (!state.race) {
+    $('main-content').innerHTML = '<p class="p-5 text-slate-400">No hay carreras programadas</p>';
+    $('skeleton-loader').classList.add('hidden');
+    $('main-content').classList.remove('hidden');
+    return;
+  }
+  
+  const race = state.race;
+  const country = getCountryCode(race.Circuit.Location.country);
+  const countryData = LATAM_COUNTRIES.find(c => c.code === state.selectedCountry) || LATAM_COUNTRIES[0];
+  
+  $('race-name').textContent = race.raceName;
+  $('circuit-location').textContent = `${race.Circuit.circuitName}, ${race.Circuit.Location.locality}`;
+  
+  $('country-flag').src = getFlagUrl(country, 48);
+  $('country-flag').onerror = () => $('country-flag').style.display = 'none';
+  
+  $('selected-flag').src = getFlagUrl(state.selectedCountry, 32);
+  $('selected-flag').onerror = () => $('selected-flag').style.display = 'none';
+  
+  $('selected-country').textContent = countryData.name;
+  $('selected-timezone').textContent = getUTCOffset(countryData.timezone);
+  
+  // Weather
+  if (state.weather) {
+    $('weather-mini').textContent = `${state.weather.temp_C}°C`;
+  }
+  
+  // Circuit image
+  fetchCircuitImage(race.Circuit.circuitId).then(url => {
+    if (url) {
+      $('circuit-image').src = url;
+      $('circuit-image').onerror = () => {
+        $('circuit-image').classList.add('hidden');
+        $('circuit-placeholder').classList.remove('hidden');
+      };
+    } else {
+      $('circuit-image').classList.add('hidden');
+      $('circuit-placeholder').classList.remove('hidden');
+    }
+  });
+  
+  // Circuit info
+  const circuitInfo = CIRCUIT_DATA[race.Circuit.circuitId];
+  if (circuitInfo) {
+    $('track-length').textContent = `${circuitInfo.length} km`;
+    $('race-laps').textContent = circuitInfo.laps;
+    $('race-distance').textContent = `${(circuitInfo.length * circuitInfo.laps).toFixed(3)} km`;
+    $('lap-record').textContent = circuitInfo.record;
+    $('record-holder').textContent = circuitInfo.holder;
+    $('circuit-info').classList.remove('hidden');
+  }
+  
+  // Schedule
+  renderSchedule();
+  
+  // Countdown
+  const raceDate = new Date(`${race.date}T${race.time}`);
+  startCountdown(raceDate);
+  
+  $('skeleton-loader').classList.add('hidden');
+  $('main-content').classList.remove('hidden');
+  
+  // Load weather async
+  setTimeout(() => {
+    fetchWeather(race.Circuit.Location.locality).then(w => {
+      if (w) {
+        state.weather = w;
+        $('weather-mini').textContent = `${w.temp_C}°C`;
+      }
+    });
+  }, 500);
+}
+
+function startCountdown(targetDate) {
+  if (state.countdownInterval) clearInterval(state.countdownInterval);
+  
+  function update() {
+    const now = new Date();
+    const diff = targetDate - now;
+    
+    if (diff <= 0) {
+      $('countdown').textContent = 'En vivo!';
+      clearInterval(state.countdownInterval);
+      return;
+    }
+    
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    let text = '';
+    if (days > 0) text += `${days}d `;
+    if (hours > 0 || days > 0) text += `${hours}h `;
+    text += `${minutes}m`;
+    
+    $('countdown').textContent = text;
+  }
+  
+  update();
+  state.countdownInterval = setInterval(update, 60000);
+}
+
+function renderCountryList() {
+  const race = state.race;
+  if (!race) return;
+  
+  const raceDate = new Date(`${race.date}T${race.time}`);
+  
+  const html = LATAM_COUNTRIES.map(country => {
+    const localTime = formatTime(raceDate, country.timezone);
+    const isSelected = country.code === state.selectedCountry;
+    
+    return `
+      <button class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-slate-800 transition-colors ${isSelected ? 'bg-slate-800 ring-1 ring-f1-red' : ''}" data-code="${country.code}">
+        <img src="${getFlagUrl(country.code, 32)}" alt="${country.name}" class="w-8 h-6 rounded border border-slate-600 object-cover" onerror="this.style.display='none';" />
+        <div class="flex-1 text-left">
+          <p class="font-medium text-white">${country.name}</p>
+          <p class="text-xs text-slate-400">${getUTCOffset(country.timezone)}</p>
+        </div>
+        <p class="font-bold text-f1-red">${localTime}</p>
+      </button>
+    `;
+  }).join('');
+  
+  $('country-list').innerHTML = html;
+  
+  $('country-list').querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.selectedCountry = btn.dataset.code;
+      localStorage.setItem('f1_selected_country', state.selectedCountry);
+      renderRace();
+      closeModal();
+    });
+  });
+}
+
+function openModal() {
+  renderCountryList();
+  $('country-modal').showModal();
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  $('country-modal').close();
+  document.body.style.overflow = '';
+}
+
+function toggleTheme() {
+  state.darkMode = !state.darkMode;
+  document.documentElement.classList.toggle('dark', state.darkMode);
+  localStorage.setItem('f1_dark_mode', state.darkMode);
+  $('theme-icon-dark').classList.toggle('hidden', !state.darkMode);
+  $('theme-icon-light').classList.toggle('hidden', state.darkMode);
+}
+
+async function refreshData() {
+  localStorage.removeItem('f1_race_data');
+  localStorage.removeItem('f1_race_data_time');
+  
+  $('main-content').classList.add('hidden');
+  $('skeleton-loader').classList.remove('hidden');
+  $('circuit-info').classList.add('hidden');
+  
+  try {
+    state.race = await fetchRace();
+    if (state.race) {
+      state.sessions = getSessions(state.race);
+    }
+    renderRace();
+  } catch (error) {
+    console.error('Refresh failed:', error);
+    $('main-content').innerHTML = '<p class="p-5 text-red-400">Error cargando datos</p>';
+    $('skeleton-loader').classList.add('hidden');
+    $('main-content').classList.remove('hidden');
+  }
+}
+
+function setupAutoRefresh() {
+  setInterval(() => {
+    const lastRefresh = localStorage.getItem('f1_last_refresh');
+    const now = Date.now();
+    if (!lastRefresh || (now - parseInt(lastRefresh)) > CONFIG.AUTO_REFRESH) {
+      refreshData();
+      localStorage.setItem('f1_last_refresh', now.toString());
+    }
+  }, 60000);
+}
+
+async function init() {
+  const savedDarkMode = localStorage.getItem('f1_dark_mode');
+  state.darkMode = savedDarkMode !== 'false';
+  document.documentElement.classList.toggle('dark', state.darkMode);
+  $('theme-icon-dark').classList.toggle('hidden', !state.darkMode);
+  $('theme-icon-light').classList.toggle('hidden', state.darkMode);
+  
+  state.selectedCountry = detectCountry();
+  
+  $('theme-toggle').addEventListener('click', toggleTheme);
+  $('refresh-btn').addEventListener('click', refreshData);
+  $('select-country-btn').addEventListener('click', openModal);
+  $('close-modal').addEventListener('click', closeModal);
+  
+  $('country-modal').addEventListener('click', e => {
+    if (e.target === $('country-modal')) closeModal();
+  });
+  
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && $('country-modal').open) closeModal();
+  });
+  
+  try {
+    state.race = await fetchRace();
+    if (state.race) {
+      state.sessions = getSessions(state.race);
+    }
+    renderRace();
+  } catch (error) {
+    console.error('Init failed:', error);
+    $('main-content').innerHTML = '<p class="p-5 text-red-400">Error cargando datos</p>';
+    $('skeleton-loader').classList.add('hidden');
+    $('main-content').classList.remove('hidden');
+  }
+  
+  setupAutoRefresh();
+  
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+}
+
+document.addEventListener('DOMContentLoaded', init);
+  </script>
 </body>
 </html>
