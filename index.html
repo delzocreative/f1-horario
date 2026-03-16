@@ -152,13 +152,13 @@
             <p class="text-xs text-slate-400">Distancia</p>
             <p id="race-distance" class="font-semibold text-white"></p>
           </div>
-          <div class="bg-slate-700/50 rounded-lg p-3">
+<div class="bg-slate-700/50 rounded-lg p-3">
             <p class="text-xs text-slate-400">Record Vuelta</p>
             <p id="lap-record" class="font-semibold text-white"></p>
+            <p id="record-holder" class="text-xs text-slate-400 mt-1"></p>
           </div>
         </div>
-        <p id="record-holder" class="text-xs text-slate-400 mt-3"></p>
-      </section>
+       </section>
     </div>
   </main>
 
@@ -392,10 +392,8 @@ async function fetchCircuitImage(circuitId) {
 
 async function fetchWeather(city) {
   try {
-    console.log('Fetching weather for:', city);
     const response = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1&lang=es`);
     const data = await response.json();
-    console.log('Weather data:', data);
     const forecast = {};
     
     if (data?.weather) {
@@ -409,10 +407,8 @@ async function fetchWeather(city) {
       });
     }
     
-    console.log('Forecast:', forecast);
     return forecast;
   } catch (e) {
-    console.error('Weather fetch error:', e);
     return {};
   }
 }
@@ -430,14 +426,11 @@ function getWeatherEmoji(weatherCode) {
 }
 
 function getWeatherForSession(dateStr, timeStr, weatherData) {
-  console.log('getWeatherForSession:', dateStr, timeStr, weatherData);
   if (!weatherData || Object.keys(weatherData).length === 0) {
-    console.log('No weather data available');
     return null;
   }
   
   if (!weatherData[dateStr]) {
-    console.log('No weather for date:', dateStr, 'Available dates:', Object.keys(weatherData));
     return null;
   }
   
@@ -456,15 +449,11 @@ function getWeatherForSession(dateStr, timeStr, weatherData) {
     }
   });
   
-  console.log('Closest hourly:', closestHourly);
-  
   if (closestHourly) {
-    const result = {
+    return {
       temp: closestHourly.tempC || dayWeather.avgTemp,
       emoji: getWeatherEmoji(closestHourly.weatherCode)
     };
-    console.log('Weather result:', result);
-    return result;
   }
   
   return {
