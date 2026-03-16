@@ -97,49 +97,39 @@
           </div>
         </div>
         
-        <div class="p-5">
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <h2 id="race-name" class="text-2xl font-bold text-white"></h2>
-              <p id="circuit-location" class="text-slate-400 text-sm mt-1"></p>
-            </div>
-            <div id="countdown-box" class="text-right shrink-0">
-              <p class="text-xs text-slate-400">Comienza en</p>
-              <p id="countdown" class="text-f1-red font-mono font-bold text-lg"></p>
-            </div>
-          </div>
-
-          <!-- Country Selector -->
-          <button id="select-country-btn" class="mt-4 w-full bg-slate-700/50 rounded-xl p-3 flex items-center justify-between hover:bg-slate-700 transition-colors">
-            <div class="flex items-center gap-3">
-              <img id="selected-flag" class="w-8 h-6 rounded border border-slate-600 object-cover" alt="Pais" />
-              <div class="text-left">
-                <p id="selected-country" class="font-semibold text-white"></p>
-                <p id="selected-timezone" class="text-xs text-slate-400"></p>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <span id="weather-mini" class="text-sm text-slate-300"></span>
-              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-              </svg>
-            </div>
-          </button>
-        </div>
+<div class="p-5">
+           <div class="flex items-start justify-between gap-4">
+             <div>
+               <h2 id="race-name" class="text-2xl font-bold text-white"></h2>
+               <p id="circuit-location" class="text-slate-400 text-sm mt-1"></p>
+             </div>
+             <div id="countdown-box" class="text-right shrink-0">
+               <p class="text-xs text-slate-400">Comienza en</p>
+               <p id="countdown" class="text-f1-red font-mono font-bold text-lg"></p>
+             </div>
+           </div>
+         </div>
       </section>
 
-      <!-- Schedule Table -->
-      <section class="bg-slate-800 rounded-xl overflow-hidden">
-        <div class="px-5 py-4 border-b border-slate-700">
-          <h3 class="text-lg font-semibold text-white flex items-center gap-2">
-            <svg class="w-5 h-5 text-f1-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            Horarios del Fin de Semana
-          </h3>
-        </div>
-        <div id="schedule-list" class="divide-y divide-slate-700/50"></div>
-      </section>
+<!-- Schedule Table -->
+       <section class="bg-slate-800 rounded-xl overflow-hidden">
+         <div class="px-5 py-4 border-b border-slate-700 flex items-center justify-between">
+           <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+             <svg class="w-5 h-5 text-f1-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+             </svg>
+             Horarios del Fin de Semana
+           </h3>
+           <button id="select-country-btn" class="flex items-center gap-2 bg-slate-700/50 rounded-lg px-3 py-1.5 hover:bg-slate-700 transition-colors">
+             <img id="selected-flag" class="w-6 h-4 rounded border border-slate-600 object-cover" alt="Pais" />
+             <span id="selected-country-short" class="text-sm font-medium text-white"></span>
+             <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+             </svg>
+           </button>
+         </div>
+         <div id="schedule-list" class="divide-y divide-slate-700/50"></div>
+       </section>
 
       <!-- Circuit Info -->
       <section id="circuit-info" class="bg-slate-800 rounded-xl p-5 hidden fade-in">
@@ -147,7 +137,7 @@
           <svg class="w-5 h-5 text-f1-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          Informacion del Circuito
+          Información del Circuito
         </h3>
         <div class="grid grid-cols-2 gap-3">
           <div class="bg-slate-700/50 rounded-lg p-3">
@@ -181,7 +171,7 @@
   <dialog id="country-modal" class="w-full max-w-lg mx-auto h-full md:h-auto md:max-h-[90vh] md:rounded-2xl bg-slate-900 text-slate-100 border-0">
     <div class="flex flex-col h-full">
       <div class="flex items-center justify-between p-4 border-b border-slate-700 sticky top-0 bg-slate-900 z-10">
-        <h3 class="text-lg font-semibold text-white">Seleccionar Pais</h3>
+        <h3 class="text-lg font-semibold text-white">Seleccionar País</h3>
         <button id="close-modal" class="p-2 hover:bg-slate-800 rounded-lg transition-colors" aria-label="Cerrar">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -199,12 +189,12 @@ const CONFIG = {
 };
 
 const SESSION_NAMES = {
-  'FirstPractice': { name: 'Practica 1', short: 'FP1', icon: '🏎️' },
-  'SecondPractice': { name: 'Practica 2', short: 'FP2', icon: '🏎️' },
-  'ThirdPractice': { name: 'Practica 3', short: 'FP3', icon: '🏎️' },
+  'FirstPractice': { name: 'Práctica 1', short: 'FP1', icon: '🏎️' },
+  'SecondPractice': { name: 'Práctica 2', short: 'FP2', icon: '🏎️' },
+  'ThirdPractice': { name: 'Práctica 3', short: 'FP3', icon: '🏎️' },
   'SprintQualifying': { name: 'Sprint Qualy', short: 'SQ', icon: '⚡' },
   'Sprint': { name: 'Sprint', short: 'Sprint', icon: '🏃' },
-  'Qualifying': { name: 'Clasificacion', short: 'Qualy', icon: '🎯' },
+  'Qualifying': { name: 'Clasificación', short: 'Qualy', icon: '🎯' },
   'Race': { name: 'Carrera', short: 'Race', icon: '🏁' }
 };
 
@@ -282,7 +272,7 @@ const COUNTRY_NAME_MAP = {
   'UAE': 'ae', 'UK': 'gb', 'USA': 'us', 'Austria': 'at'
 };
 
-let state = { race: null, sessions: [], selectedCountry: null, darkMode: true, countdownInterval: null, weather: null };
+let state = { race: null, sessions: [], selectedCountry: null, darkMode: true, countdownInterval: null, weather: {} };
 
 const $ = id => document.getElementById(id);
 
@@ -404,10 +394,66 @@ async function fetchWeather(city) {
   try {
     const response = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1&lang=es`);
     const data = await response.json();
-    return data?.current_condition?.[0] || null;
+    const forecast = {};
+    
+    if (data?.weather) {
+      data.weather.forEach(day => {
+        forecast[day.date] = {
+          maxTemp: day.maxtempC,
+          minTemp: day.mintempC,
+          avgTemp: day.avgtempC,
+          hourly: day.hourly
+        };
+      });
+    }
+    
+    return forecast;
   } catch (e) {
-    return null;
+    return {};
   }
+}
+
+function getWeatherEmoji(weatherCode) {
+  const code = parseInt(weatherCode);
+  if (code === 113) return '☀️';
+  if (code === 116) return '⛅';
+  if (code === 119 || code === 122) return '☁️';
+  if ([176, 263, 266, 293, 296, 299, 302, 305, 308, 311, 314, 317, 320, 353, 356, 359].includes(code)) return '🌧️';
+  if ([200, 386, 389, 392, 395].includes(code)) return '⛈️';
+  if ([227, 230, 323, 326, 329, 332, 335, 338, 368, 371, 374, 377].includes(code)) return '❄️';
+  if ([143, 248, 260].includes(code)) return '🌫️';
+  return '🌡️';
+}
+
+function getWeatherForSession(dateStr, timeStr, weatherData) {
+  if (!weatherData[dateStr]) return null;
+  
+  const dayWeather = weatherData[dateStr];
+  const hour = parseInt(timeStr.split(':')[0]);
+  
+  let closestHourly = dayWeather.hourly?.[0];
+  let minDiff = 24;
+  
+  dayWeather.hourly?.forEach(h => {
+    const hHour = parseInt(h.time) / 100;
+    const diff = Math.abs(hHour - hour);
+    if (diff < minDiff) {
+      minDiff = diff;
+      closestHourly = h;
+    }
+  });
+  
+  if (closestHourly) {
+    return {
+      temp: closestHourly.tempC || dayWeather.avgTemp,
+      emoji: getWeatherEmoji(closestHourly.weatherCode)
+    };
+  }
+  
+  return {
+    temp: dayWeather.avgTemp,
+    emoji: '🌡️'
+  };
 }
 
 function renderSchedule() {
@@ -425,6 +471,7 @@ function renderSchedule() {
     const info = SESSION_NAMES[session.key];
     const localTime = formatTime(sessionDate, countryData.timezone);
     const day = formatDay(sessionDate, countryData.timezone);
+    const weather = getWeatherForSession(session.date, session.time, state.weather);
     
     return `
       <div class="session-row px-5 py-3 ${isNext ? 'next' : ''} ${isPast ? 'opacity-50' : ''}">
@@ -436,9 +483,10 @@ function renderSchedule() {
               <p class="text-xs text-slate-400">${day}</p>
             </div>
           </div>
-          <div class="text-right">
+          <div class="text-right flex items-center gap-3">
             <p class="font-bold text-lg ${session.key === 'Race' ? 'text-f1-red' : 'text-white'}">${localTime}</p>
-            ${isNext ? '<p class="text-xs text-f1-red font-medium">Proxima</p>' : ''}
+            ${weather ? `<span class="text-sm">${weather.temp}°C ${weather.emoji}</span>` : ''}
+            ${isNext ? '<p class="text-xs text-f1-red font-medium">Próxima</p>' : ''}
             ${isPast ? '<p class="text-xs text-slate-500">Finalizada</p>' : ''}
           </div>
         </div>
@@ -467,16 +515,10 @@ function renderRace() {
   $('country-flag').src = getFlagUrl(country, 48);
   $('country-flag').onerror = () => $('country-flag').style.display = 'none';
   
-  $('selected-flag').src = getFlagUrl(state.selectedCountry, 32);
+  $('selected-flag').src = getFlagUrl(state.selectedCountry, 24);
   $('selected-flag').onerror = () => $('selected-flag').style.display = 'none';
   
-  $('selected-country').textContent = countryData.name;
-  $('selected-timezone').textContent = getUTCOffset(countryData.timezone);
-  
-  // Weather
-  if (state.weather) {
-    $('weather-mini').textContent = `${state.weather.temp_C}°C`;
-  }
+  $('selected-country-short').textContent = countryData.code.toUpperCase();
   
   // Circuit image
   fetchCircuitImage(race.Circuit.circuitId).then(url => {
@@ -518,7 +560,7 @@ function renderRace() {
     fetchWeather(race.Circuit.Location.locality).then(w => {
       if (w) {
         state.weather = w;
-        $('weather-mini').textContent = `${w.temp_C}°C`;
+        renderSchedule();
       }
     });
   }, 500);
