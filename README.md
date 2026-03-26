@@ -100,7 +100,16 @@ Tiempos de cache:
 
 ## Licencia
 
-MIT
+Este proyecto está bajo la licencia [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+
+Esto significa que eres libre de:
+- **Compartir**: Copiar y redistribuir el material
+- **Adaptar**: Remezclar, transformar y crear a partir del material
+
+Bajo las siguientes condiciones:
+- **Atribución**: Debes dar crédito al autor original
+- **NoComercial**: No puedes usar el material con fines comerciales
+- **CompartirIgual**: Si adaptas el material, debes distribuir tus contribuciones bajo la misma licencia
 
 ## Agradecimientos
 
