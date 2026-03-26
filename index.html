@@ -7,7 +7,7 @@
   <meta name="description" content="Horarios de Formula 1 para Latinoamerica - Proximo Gran Premio">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>F1 Grand Prix LATAM</title>
+  <title>Horario F1 LATAM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -42,7 +42,7 @@
     <div class="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
       <h1 class="text-lg font-bold flex items-center gap-2">
         <span class="text-2xl">🏁</span>
-        <span>F1 LATAM</span>
+        <span>Horario F1 LATAM</span>
       </h1>
       <div class="flex items-center gap-2">
         <button id="refresh-btn" class="p-2 hover:bg-slate-800 rounded-lg transition-colors" aria-label="Actualizar">
@@ -131,25 +131,33 @@
           </svg>
           Información del Circuito
         </h3>
-        <div class="grid grid-cols-2 gap-3">
-          <div class="bg-slate-700/50 rounded-lg p-3">
-            <p class="text-xs text-slate-400">Longitud</p>
-            <p id="track-length" class="font-semibold text-white"></p>
-          </div>
-          <div class="bg-slate-700/50 rounded-lg p-3">
-            <p class="text-xs text-slate-400">Vueltas</p>
-            <p id="race-laps" class="font-semibold text-white"></p>
-          </div>
-          <div class="bg-slate-700/50 rounded-lg p-3">
-            <p class="text-xs text-slate-400">Distancia</p>
-            <p id="race-distance" class="font-semibold text-white"></p>
-          </div>
-<div class="bg-slate-700/50 rounded-lg p-3">
-            <p class="text-xs text-slate-400">Record Vuelta</p>
-            <p id="lap-record" class="font-semibold text-white"></p>
-            <p id="record-holder" class="text-xs text-slate-400 mt-1"></p>
-          </div>
-        </div>
+<div class="grid grid-cols-2 gap-3">
+           <div class="bg-slate-700/50 rounded-lg p-3">
+             <p class="text-xs text-slate-400">Longitud</p>
+             <p id="track-length" class="font-semibold text-white"></p>
+           </div>
+           <div class="bg-slate-700/50 rounded-lg p-3">
+             <p class="text-xs text-slate-400">Curvas</p>
+             <p id="track-turns" class="font-semibold text-white"></p>
+           </div>
+           <div class="bg-slate-700/50 rounded-lg p-3">
+             <p class="text-xs text-slate-400">Vueltas</p>
+             <p id="race-laps" class="font-semibold text-white"></p>
+           </div>
+           <div class="bg-slate-700/50 rounded-lg p-3">
+             <p class="text-xs text-slate-400">Inaugurado</p>
+             <p id="track-opened" class="font-semibold text-white"></p>
+           </div>
+           <div class="bg-slate-700/50 rounded-lg p-3">
+             <p class="text-xs text-slate-400">Capacidad</p>
+             <p id="track-capacity" class="font-semibold text-white"></p>
+           </div>
+           <div class="bg-slate-700/50 rounded-lg p-3">
+             <p class="text-xs text-slate-400">Record Vuelta</p>
+             <p id="lap-record" class="font-semibold text-white"></p>
+             <p id="record-holder" class="text-xs text-slate-400 mt-1"></p>
+           </div>
+         </div>
        </section>
     </div>
   </main>
@@ -176,7 +184,7 @@
 
   <script>
 const CONFIG = {
-  TTL: { RACE: 8 * 60 * 60 * 1000, WEATHER: 30 * 60 * 1000 },
+  TTL: { RACE: 8 * 60 * 60 * 1000, WEATHER: 4 * 60 * 60 * 1000 },
   AUTO_REFRESH: 8 * 60 * 60 * 1000
 };
 
@@ -215,30 +223,30 @@ const LATAM_COUNTRIES = [
 ];
 
 const CIRCUIT_DATA = {
-  'albert_park': { length: 5.303, laps: 58, record: '1:19.813', holder: 'Charles Leclerc (2024)' },
-  'bahrain': { length: 5.412, laps: 57, record: '1:31.447', holder: 'Pedro de la Rosa (2005)' },
-  'shanghai': { length: 5.451, laps: 56, record: '1:32.238', holder: 'Michael Schumacher (2004)' },
-  'suzuka': { length: 5.807, laps: 53, record: '1:30.983', holder: 'Lewis Hamilton (2019)' },
-  'jeddah': { length: 6.175, laps: 50, record: '1:30.734', holder: 'Lewis Hamilton (2021)' },
-  'miami': { length: 5.412, laps: 57, record: '1:29.708', holder: 'Max Verstappen (2023)' },
-  'imola': { length: 4.909, laps: 63, record: '1:15.484', holder: 'Lewis Hamilton (2020)' },
-  'monaco': { length: 3.337, laps: 78, record: '1:12.909', holder: 'Lewis Hamilton (2021)' },
-  'catalunya': { length: 4.657, laps: 66, record: '1:16.330', holder: 'Max Verstappen (2023)' },
-  'villeneuve': { length: 4.361, laps: 70, record: '1:13.078', holder: 'Valtteri Bottas (2019)' },
-  'red_bull_ring': { length: 4.318, laps: 71, record: '1:05.619', holder: 'Carlos Sainz (2020)' },
-  'silverstone': { length: 5.891, laps: 52, record: '1:27.097', holder: 'Max Verstappen (2023)' },
-  'spa': { length: 7.004, laps: 44, record: '1:46.286', holder: 'Valtteri Bottas (2018)' },
-  'hungaroring': { length: 4.381, laps: 70, record: '1:16.627', holder: 'Max Verstappen (2023)' },
-  'zandvoort': { length: 4.259, laps: 72, record: '1:11.097', holder: 'Lewis Hamilton (2021)' },
-  'monza': { length: 5.793, laps: 53, record: '1:21.046', holder: 'Rubens Barrichello (2004)' },
-  'baku': { length: 6.003, laps: 51, record: '1:43.009', holder: 'Charles Leclerc (2019)' },
-  'marina_bay': { length: 4.940, laps: 62, record: '1:35.867', holder: 'Lewis Hamilton (2023)' },
-  'americas': { length: 5.513, laps: 56, record: '1:36.169', holder: 'Charles Leclerc (2019)' },
-  'rodriguez': { length: 4.304, laps: 71, record: '1:17.774', holder: 'Valtteri Bottas (2021)' },
-  'interlagos': { length: 4.309, laps: 71, record: '1:10.540', holder: 'Max Verstappen (2023)' },
-  'vegas': { length: 6.201, laps: 50, record: '1:35.490', holder: 'Oscar Piastri (2024)' },
-  'losail': { length: 5.419, laps: 57, record: '1:24.319', holder: 'Max Verstappen (2023)' },
-  'yas_marina': { length: 5.284, laps: 58, record: '1:26.103', holder: 'Max Verstappen (2021)' }
+  'albert_park': { length: 5.278, laps: 58, turns: 16, opened: 1996, capacity: 125000, record: '1:19.813', holder: 'Charles Leclerc (2024)' },
+  'bahrain': { length: 5.412, laps: 57, turns: 15, opened: 2004, capacity: 70000, record: '1:32.608', holder: 'Max Verstappen (2024)' },
+  'shanghai': { length: 5.451, laps: 56, turns: 16, opened: 2004, capacity: 200000, record: '1:35.454', holder: 'Lando Norris (2025)' },
+  'suzuka': { length: 5.807, laps: 53, turns: 18, opened: 1962, capacity: 155000, record: '1:30.965', holder: 'Kimi Antonelli (2025)' },
+  'jeddah': { length: 6.174, laps: 50, turns: 27, opened: 2021, capacity: 50000, record: '1:31.632', holder: 'Charles Leclerc (2024)' },
+  'miami': { length: 5.412, laps: 57, turns: 19, opened: 2022, capacity: 80000, record: '1:29.746', holder: 'Lando Norris (2025)' },
+  'imola': { length: 4.909, laps: 63, turns: 17, opened: 1953, capacity: 60000, record: '1:17.988', holder: 'Max Verstappen (2025)' },
+  'monaco': { length: 3.337, laps: 78, turns: 19, opened: 1929, capacity: 37000, record: '1:13.221', holder: 'Lando Norris (2025)' },
+  'catalunya': { length: 4.657, laps: 66, turns: 16, opened: 1991, capacity: 140000, record: '1:15.743', holder: 'Oscar Piastri (2025)' },
+  'villeneuve': { length: 4.361, laps: 70, turns: 14, opened: 1978, capacity: 100000, record: '1:14.119', holder: 'George Russell (2025)' },
+  'red_bull_ring': { length: 4.318, laps: 71, turns: 10, opened: 1969, capacity: 105000, record: '1:06.200', holder: 'Max Verstappen (2021)' },
+  'silverstone': { length: 5.891, laps: 52, turns: 18, opened: 1948, capacity: 150000, record: '1:27.369', holder: 'Lewis Hamilton (2019)' },
+  'spa': { length: 7.004, laps: 44, turns: 19, opened: 1950, capacity: 70000, record: '1:44.701', holder: 'Sergio Perez (2024)' },
+  'hungaroring': { length: 4.381, laps: 70, turns: 14, opened: 1986, capacity: 70000, record: '1:16.627', holder: 'Lewis Hamilton (2020)' },
+  'zandvoort': { length: 4.259, laps: 72, turns: 14, opened: 1948, capacity: 100000, record: '1:12.271', holder: 'Oscar Piastri (2025)' },
+  'monza': { length: 5.793, laps: 53, turns: 11, opened: 1922, capacity: 118000, record: '1:20.901', holder: 'Lando Norris (2025)' },
+  'baku': { length: 6.003, laps: 51, turns: 20, opened: 2016, capacity: 28000, record: '1:43.009', holder: 'Charles Leclerc (2019)' },
+  'marina_bay': { length: 4.940, laps: 62, turns: 19, opened: 2008, capacity: 80000, record: '1:33.808', holder: 'Lewis Hamilton (2025)' },
+  'americas': { length: 5.513, laps: 56, turns: 20, opened: 2012, capacity: 120000, record: '1:36.169', holder: 'Charles Leclerc (2019)' },
+  'rodriguez': { length: 4.304, laps: 71, turns: 17, opened: 1962, capacity: 110000, record: '1:17.774', holder: 'Valtteri Bottas (2021)' },
+  'interlagos': { length: 4.309, laps: 71, turns: 15, opened: 1940, capacity: 60000, record: '1:10.540', holder: 'Valtteri Bottas (2018)' },
+  'vegas': { length: 6.201, laps: 50, turns: 17, opened: 2023, capacity: 100000, record: '1:33.365', holder: 'Max Verstappen (2025)' },
+  'losail': { length: 5.419, laps: 57, turns: 16, opened: 2004, capacity: 52000, record: '1:22.384', holder: 'Lando Norris (2024)' },
+  'yas_marina': { length: 5.284, laps: 58, turns: 16, opened: 2009, capacity: 60000, record: '1:26.993', holder: 'Max Verstappen (2023)' }
 };
 
 const WIKI_CIRCUIT_MAP = {
@@ -536,8 +544,10 @@ function renderRace() {
   const circuitInfo = CIRCUIT_DATA[race.Circuit.circuitId];
   if (circuitInfo) {
     $('track-length').textContent = `${circuitInfo.length} km`;
+    $('track-turns').textContent = circuitInfo.turns;
     $('race-laps').textContent = circuitInfo.laps;
-    $('race-distance').textContent = `${(circuitInfo.length * circuitInfo.laps).toFixed(3)} km`;
+    $('track-opened').textContent = circuitInfo.opened;
+    $('track-capacity').textContent = circuitInfo.capacity.toLocaleString();
     $('lap-record').textContent = circuitInfo.record;
     $('record-holder').textContent = circuitInfo.holder;
     $('circuit-info').classList.remove('hidden');

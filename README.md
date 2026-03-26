@@ -6,14 +6,14 @@ Dashboard de horarios de Formula 1 para paises de Latinoamerica.
 
 - **Horarios completos del fin de semana**: FP1, FP2, FP3, Sprint Qualifying, Sprint, Qualifying y Carrera
 - **Soporte para 18 paises de Latinoamerica** con banderas visibles en el selector
-- **Deteccion automatica de pais** por zona horaria del navegador
-- **Selector visual de paises** con banderas y horarios locales
-- **Informacion del circuito**: longitud, vueltas, record de vuelta
+- **Detección automática de país** por zona horaria del navegador
+- **Selector visual de países** con banderas y horarios locales
+- **Información del circuito**: longitud, vueltas, curvas, récord de vuelta, capacidad e inauguración
 - **Clima actual** de la ciudad del circuito (lazy load)
 - **Modo Dark/Light** (dark por defecto)
 - **Funciona offline** (PWA)
-- **Auto-actualizacion** cada 8 horas
-- **Diseno mobile-first** con Tailwind CSS
+- **Auto-actualización** cada 8 horas
+- **Diseño mobile-first** con Tailwind CSS
 
 ## Paises Soportados
 
@@ -95,7 +95,7 @@ La aplicacion utiliza:
 
 Tiempos de cache:
 - Datos de carrera: 8 horas
-- Clima: 30 minutos
+- Clima: 4 horas
 - Imagenes de circuitos: 24 horas
 
 ## Licencia

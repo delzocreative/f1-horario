@@ -1,6 +1,6 @@
 {
-  "name": "F1 Dashboard LATAM",
-  "short_name": "F1 LATAM",
+  "name": "Horario F1 LATAM",
+  "short_name": "Horario F1",
   "description": "Horarios de Formula 1 para Latinoamerica",
   "start_url": "/index.html",
   "scope": "/",
