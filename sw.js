@@ -53,56 +53,69 @@ self.addEventListener('fetch', event => {
     return;
   }
   
+  // Manejar solicitudes externas primero (APIs)
   if (url.origin !== location.origin) {
     if (url.hostname === 'api.jolpi.ca' || 
         url.hostname === 'wttr.in' ||
         url.hostname === 'en.wikipedia.org' ||
         url.hostname === 'flagcdn.com') {
+      
       event.respondWith(
         fetch(request)
           .then(response => {
-            if (response.ok) {
+            // Solo cachear respuestas exitosas para recursos estáticos pequeños
+            if (response.ok && (url.hostname === 'flagcdn.com')) {
               const clone = response.clone();
               caches.open(CACHE_NAME).then(cache => {
                 cache.put(request, clone);
-              });
+              }).catch(() => {}); // Ignorar errores al cachear
             }
             return response;
           })
           .catch(() => {
-            return caches.match(request);
+            // Intentar obtener del cache solo para recursos pequeños
+            if (url.hostname === 'flagcdn.com') {
+              return caches.match(request);
+            }
+            // Para APIs externas, devolver error
+            return new Response('Network error', { status: 503 });
           })
       );
-      return;
+      return; // Salir para evitar otros handlers
     }
   }
   
+  // Para recursos locales, usar estrategia cache-first
   event.respondWith(
     caches.match(request).then(cached => {
+      // Si hay algo en cache, retornarlo
       if (cached) {
+        // Intentar actualizar cache en background sin esperar
         fetch(request).then(response => {
           if (response.ok) {
             caches.open(CACHE_NAME).then(cache => {
               cache.put(request, response);
-            });
+            }).catch(() => {});
           }
         }).catch(() => {});
         
         return cached;
+      } else {
+        // Si no hay en cache, ir a la red
+        return fetch(request).then(response => {
+          // Si la respuesta es exitosa, guardar en cache
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(request, clone);
+            }).catch(() => {}); // Ignorar errores al cachear
+          }
+          return response;
+        }).catch(() => {
+          // Si falla la red, enviar respuesta alternativa offline
+          return new Response('Offline', { status: 503 });
+        });
       }
-      
-      return fetch(request).then(response => {
-        if (response.ok) {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(request, clone);
-          });
-        }
-        return response;
-      }).catch(error => {
-        console.error('Fetch failed:', error);
-        return new Response('Offline', { status: 503 });
-      });
     })
   );
 });
