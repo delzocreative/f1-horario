@@ -25,6 +25,12 @@ const NOTIFY_RULES = [
 // The SENT KV namespace dedupes, so a generous window here is safe.
 const CHECK_WINDOW_MS = 10 * 60 * 1000;
 
+// Race schedules barely change. The cron runs often (for push-timing
+// precision), but only hits the Jolpica API this often — the rest of the
+// ticks reuse the cached race from RACE_CACHE. Matches the client's own
+// cache TTL (CONFIG.TTL.RACE in index.html).
+const RACE_CACHE_TTL_SECONDS = 8 * 60 * 60;
+
 function corsHeaders(env) {
   return {
     'Access-Control-Allow-Origin': env.ALLOWED_ORIGIN || '*',
@@ -85,7 +91,7 @@ export default {
 async function checkAndNotify(env) {
   webpush.setVapidDetails(env.VAPID_SUBJECT, env.VAPID_PUBLIC_KEY, env.VAPID_PRIVATE_KEY);
 
-  const race = await fetchNextRace();
+  const race = await getNextRace(env);
   if (!race) return;
 
   const now = Date.now();
@@ -106,6 +112,24 @@ async function checkAndNotify(env) {
     await sendToAllSubscribers(env, rule.tag, race, session);
     await env.SENT.put(dedupeKey, '1', { expirationTtl: 7 * 24 * 60 * 60 });
   }
+}
+
+// Cached in RACE_CACHE (KV's own expirationTtl handles staleness) so most
+// cron ticks don't hit Jolpica at all — only the first tick after the cache
+// expires does. Note this means a just-finished race weekend can take up to
+// RACE_CACHE_TTL_SECONDS to roll over to the next race, same trade-off the
+// client already makes with its own cache.
+async function getNextRace(env) {
+  const cached = await env.RACE_CACHE.get('next_race', 'json');
+  if (cached) return cached;
+
+  const race = await fetchNextRace();
+  if (race) {
+    await env.RACE_CACHE.put('next_race', JSON.stringify(race), {
+      expirationTtl: RACE_CACHE_TTL_SECONDS,
+    });
+  }
+  return race;
 }
 
 async function fetchNextRace() {

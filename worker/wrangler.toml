@@ -5,7 +5,8 @@ compatibility_flags = ["nodejs_compat"]
 
 kv_namespaces = [
   { binding = "SUBSCRIPTIONS", id = "e98ff0c7710b45d79be524488f39fd1b" },
-  { binding = "SENT", id = "54f14a9be62143199ebb41be916326b1" }
+  { binding = "SENT", id = "54f14a9be62143199ebb41be916326b1" },
+  { binding = "RACE_CACHE", id = "dbc2b62e1987495d826214004f7e38e4" }
 ]
 
 # Every 5 minutes. See CHECK_WINDOW_MS in src/index.js for the tolerance

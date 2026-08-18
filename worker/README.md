@@ -21,6 +21,7 @@ npx web-push generate-vapid-keys
 # 2. Crear los namespaces de KV
 npx wrangler kv namespace create SUBSCRIPTIONS
 npx wrangler kv namespace create SENT
+npx wrangler kv namespace create RACE_CACHE
 # Pegar los "id" que devuelve cada comando en wrangler.toml (kv_namespaces).
 
 # 3. Completar en wrangler.toml:
@@ -61,6 +62,7 @@ y esperar al próximo disparo (cada 5 min), o forzar una ejecución local con
 
 ## Notas
 
+- Cache de datos de carrera: KV `RACE_CACHE`, TTL 8h (igual que el cache del cliente). El cron corre cada 5 min pero solo golpea la API de Jolpica cuando ese cache vence — el resto de los ticks solo leen KV.
 - Dedupe de envíos: KV `SENT`, clave `{season}-{round}:{fp1|qualy|race}`, TTL 7 días.
 - Si un dispositivo revoca el permiso o desinstala la app, el próximo intento
   de push devuelve 404/410 y el Worker borra esa suscripción de `SUBSCRIPTIONS`
