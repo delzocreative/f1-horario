@@ -1,0 +1,24 @@
+name = "f1-push-worker"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+kv_namespaces = [
+  { binding = "SUBSCRIPTIONS", id = "e98ff0c7710b45d79be524488f39fd1b" },
+  { binding = "SENT", id = "54f14a9be62143199ebb41be916326b1" }
+]
+
+# Every 5 minutes. See CHECK_WINDOW_MS in src/index.js for the tolerance
+# this leaves for a missed/delayed tick.
+[triggers]
+crons = ["*/5 * * * *"]
+
+# Restrict who can call /subscribe and /unsubscribe. Set this to the real
+# origin the app is served from before going to production (see worker/README.md).
+[vars]
+ALLOWED_ORIGIN = "https://f1-horario.com"
+VAPID_SUBJECT = "mailto:f1-horario@delzo.cloud"
+VAPID_PUBLIC_KEY = "BAXQhXGm-T-2hk5veGR7ZVA-eNb5t4UfakZwPwLDsxI4TrIQEYappTHUri-tEQGSIKeK-INIKk9hqLvRvHHd__4"
+
+# Secret (NOT in this file): set with
+#   npx wrangler secret put VAPID_PRIVATE_KEY
