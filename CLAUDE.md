@@ -16,7 +16,9 @@ There is no build/lint/test tooling in this repo (no `package.json`). To work on
 
 ## Deployment
 
-Deployed to Cloudflare Pages (project `f1-dashboard-latam`, evident from `.wrangler/cache/`) as a static site — no `wrangler.toml` or build command, just the static files in the repo root.
+Deployed to Cloudflare Pages (project `f1-horario`, account `enzocontacto1@gmail.com`) as a static site — no `wrangler.toml` or build command, just the static files in the repo root. Production domain: `f1-horario.com`. Pushing a branch produces a preview deployment at `https://<hash>.f1-horario.pages.dev`.
+
+(`.wrangler/cache/` in the repo root references an older/unrelated project name — Pages project name and account here are per the note above, not that cache file.)
 
 ## Architecture
 
@@ -45,7 +47,7 @@ Add an entry to `LATAM_COUNTRIES` with `code` (ISO 3166-1 alpha-2, used for flag
 
 ## Push notifications (`worker/`)
 
-A separate Cloudflare Worker (not Pages Functions — Cron Triggers require a real Worker) sends push notifications: 1 day before FP1, 1 hour before Qualifying, 1 hour before the Race. Deployed as `f1-push-worker` on the `enzocontacto1@gmail.com` Cloudflare account (a different account than the one Pages/the static site is hosted under). See `worker/README.md` for the setup steps if it ever needs to be redeployed from scratch (VAPID keys, KV namespaces, secrets).
+A separate Cloudflare Worker (not Pages Functions — Cron Triggers require a real Worker) sends push notifications: 1 day before FP1, 1 hour before Qualifying, 1 hour before the Race. Deployed as `f1-push-worker`, same Cloudflare account as Pages (`enzocontacto1@gmail.com`). See `worker/README.md` for the setup steps if it ever needs to be redeployed from scratch (VAPID keys, KV namespaces, secrets).
 
 - Client (`index.html`): `initPush()`/`subscribeToPush()` request Notification permission, create a `PushManager` subscription with the VAPID public key, and POST it to the Worker's `/subscribe` endpoint along with `state.selectedCountry` (used server-side to localize the FP1 notification's time). Re-POSTs on country change to keep that in sync. `sw.js` handles the `push` (show notification) and `notificationclick` (focus/open the app) events.
 - Worker (`worker/src/index.js`): `fetch()` serves `/subscribe` and `/unsubscribe`, storing subscriptions in the `SUBSCRIPTIONS` KV namespace keyed by a SHA-256 hash of the endpoint. `scheduled()` runs every 5 minutes, fetches the next race from the same Jolpica API the client uses, and for each rule in `NOTIFY_RULES` checks whether "now" just crossed `sessionTime - leadMs`; if so it sends to every stored subscription via `web-push` (using the `nodejs_compat` flag) and records a dedupe flag in the `SENT` KV namespace (`{season}-{round}:{tag}`, 7-day TTL) so overlapping cron ticks don't double-send. A 404/410 from a push send means the browser dropped that subscription, so the Worker deletes it from `SUBSCRIPTIONS`.
