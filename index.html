@@ -796,6 +796,16 @@ async function initPush() {
     if (sub) await unsubscribeFromPush();
     else await subscribeToPush();
   });
+
+  // Chrome/Android fires this once the user finishes installing the PWA —
+  // a natural moment to ask for notification permission, since installing
+  // already signals intent to keep using the app. Not supported on iOS
+  // Safari (no JS hook for "Add to Home Screen" there), so the bell above
+  // stays as the only way to opt in on iOS, and as a manual fallback/toggle
+  // everywhere else.
+  window.addEventListener('appinstalled', () => {
+    subscribeToPush();
+  });
 }
 
 async function init() {
