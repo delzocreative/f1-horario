@@ -3,6 +3,15 @@ main = "src/index.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
+# Two separate Cloudflare Workers (separate names, separate KV data), so
+# testing never touches production subscribers. Deploy with:
+#   npx wrangler deploy --env dev
+#   npx wrangler deploy --env production
+# (there's no "default"/no-env deploy — always pass --env.)
+
+# ---- dev: used from Cloudflare Pages preview deployments ----
+[env.dev]
+name = "f1-push-worker-dev"
 kv_namespaces = [
   { binding = "SUBSCRIPTIONS", id = "e98ff0c7710b45d79be524488f39fd1b" },
   { binding = "SENT", id = "54f14a9be62143199ebb41be916326b1" },
@@ -11,15 +20,32 @@ kv_namespaces = [
 
 # Every 5 minutes. See CHECK_WINDOW_MS in src/index.js for the tolerance
 # this leaves for a missed/delayed tick.
-[triggers]
+[env.dev.triggers]
 crons = ["*/5 * * * *"]
 
-# Restrict who can call /subscribe and /unsubscribe. Set this to the real
-# origin the app is served from before going to production (see worker/README.md).
-[vars]
-ALLOWED_ORIGIN = "https://f1-horario.com"
+[env.dev.vars]
+# Pages preview URLs are random per-deploy hashes, so CORS stays open here.
+ALLOWED_ORIGIN = "*"
 VAPID_SUBJECT = "mailto:f1-horario@delzo.cloud"
 VAPID_PUBLIC_KEY = "BAXQhXGm-T-2hk5veGR7ZVA-eNb5t4UfakZwPwLDsxI4TrIQEYappTHUri-tEQGSIKeK-INIKk9hqLvRvHHd__4"
 
-# Secret (NOT in this file): set with
-#   npx wrangler secret put VAPID_PRIVATE_KEY
+# ---- production: used from f1-horario.com ----
+[env.production]
+name = "f1-push-worker-prod"
+kv_namespaces = [
+  { binding = "SUBSCRIPTIONS", id = "CHANGE_ME" },
+  { binding = "SENT", id = "CHANGE_ME" },
+  { binding = "RACE_CACHE", id = "CHANGE_ME" }
+]
+
+[env.production.triggers]
+crons = ["*/5 * * * *"]
+
+[env.production.vars]
+ALLOWED_ORIGIN = "https://f1-horario.com"
+VAPID_SUBJECT = "mailto:f1-horario@delzo.cloud"
+VAPID_PUBLIC_KEY = "CHANGE_ME_AFTER_RUNNING_generate-vapid-keys"
+
+# Secrets (NOT in this file): set per environment with
+#   npx wrangler secret put VAPID_PRIVATE_KEY --env dev
+#   npx wrangler secret put VAPID_PRIVATE_KEY --env production
