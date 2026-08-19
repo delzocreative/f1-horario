@@ -204,10 +204,12 @@ const CONFIG = {
   AUTO_REFRESH: 8 * 60 * 60 * 1000
 };
 
+// The Worker (worker/) is the source of race data (GET /next-race, itself
+// cached from Jolpica — see worker/src/index.js) and push subscriptions.
 // Filled in after deploying worker/ — see worker/README.md.
-const PUSH_CONFIG = {
-  VAPID_PUBLIC_KEY: 'BAXQhXGm-T-2hk5veGR7ZVA-eNb5t4UfakZwPwLDsxI4TrIQEYappTHUri-tEQGSIKeK-INIKk9hqLvRvHHd__4',
-  WORKER_URL: 'https://f1-push-worker.enzocontacto1.workers.dev'
+const WORKER_CONFIG = {
+  URL: 'https://f1-push-worker.enzocontacto1.workers.dev',
+  VAPID_PUBLIC_KEY: 'BAXQhXGm-T-2hk5veGR7ZVA-eNb5t4UfakZwPwLDsxI4TrIQEYappTHUri-tEQGSIKeK-INIKk9hqLvRvHHd__4'
 };
 
 const SESSION_NAMES = {
@@ -374,18 +376,9 @@ async function fetchRace() {
     return JSON.parse(cached);
   }
   
-  const currentYear = new Date().getFullYear();
-  const response = await fetch(`https://api.jolpi.ca/ergast/f1/${currentYear}.json`);
-  const data = await response.json();
-  
-  if (!data?.MRData?.RaceTable?.Races) throw new Error('No race data');
-  
-  const races = data.MRData.RaceTable.Races;
-  const now = new Date();
-  
-  const upcoming = races.filter(r => new Date(`${r.date}T${r.time}`) > now);
-  const nextRace = upcoming[0];
-  
+  const response = await fetch(`${WORKER_CONFIG.URL}/next-race`);
+  const nextRace = await response.json();
+
   if (!nextRace) return null;
   
   localStorage.setItem(cacheKey, JSON.stringify(nextRace));
@@ -749,7 +742,7 @@ async function subscribeToPush() {
   const reg = await navigator.serviceWorker.ready;
   const sub = await reg.pushManager.subscribe({
     userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(PUSH_CONFIG.VAPID_PUBLIC_KEY)
+    applicationServerKey: urlBase64ToUint8Array(WORKER_CONFIG.VAPID_PUBLIC_KEY)
   });
 
   await sendSubscriptionToWorker(sub);
@@ -758,7 +751,7 @@ async function subscribeToPush() {
 
 async function sendSubscriptionToWorker(sub) {
   try {
-    await fetch(`${PUSH_CONFIG.WORKER_URL}/subscribe`, {
+    await fetch(`${WORKER_CONFIG.URL}/subscribe`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...sub.toJSON(), country: state.selectedCountry })
@@ -770,7 +763,7 @@ async function unsubscribeFromPush() {
   const sub = await getPushSubscription();
   if (sub) {
     try {
-      await fetch(`${PUSH_CONFIG.WORKER_URL}/unsubscribe`, {
+      await fetch(`${WORKER_CONFIG.URL}/unsubscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ endpoint: sub.endpoint })

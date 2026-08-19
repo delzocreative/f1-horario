@@ -1,8 +1,13 @@
 # f1-push-worker
 
-Cloudflare Worker que maneja las notificaciones push de F1 Horario LATAM: guarda
-suscripciones y, por cron cada 5 minutos, avisa 1 día antes de FP1 y 1 hora
-antes de Qualy y de la Carrera.
+Cloudflare Worker de F1 Horario LATAM. Hace dos cosas:
+
+1. **Sirve los horarios**: `GET /next-race` devuelve la próxima carrera
+   (cacheada de Jolpica, TTL 8h). El cliente (`index.html`) le pega a esto en
+   vez de a Jolpica directo — así que el dashboard depende de que este Worker
+   esté arriba, no solo las notificaciones.
+2. **Notificaciones push**: guarda suscripciones y, por cron cada 5 minutos,
+   avisa 1 día antes de FP1 y 1 hora antes de Qualy y de la Carrera.
 
 Separado del sitio estático (que sigue siendo Cloudflare Pages) porque los
 Cron Triggers son una feature de Workers, no de Pages Functions.
@@ -42,12 +47,12 @@ npx wrangler deploy
 
 ## Conectar el cliente
 
-En `index.html`, completar el objeto `PUSH_CONFIG`:
+En `index.html`, completar el objeto `WORKER_CONFIG`:
 
 ```js
-const PUSH_CONFIG = {
+const WORKER_CONFIG = {
+  URL: 'https://f1-push-worker.<tu-subdominio>.workers.dev',
   VAPID_PUBLIC_KEY: '...',   // la misma Public Key del paso 1
-  WORKER_URL: 'https://f1-push-worker.<tu-subdominio>.workers.dev',
 };
 ```
 

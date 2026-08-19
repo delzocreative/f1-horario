@@ -31,18 +31,22 @@ const CHECK_WINDOW_MS = 10 * 60 * 1000;
 // cache TTL (CONFIG.TTL.RACE in index.html).
 const RACE_CACHE_TTL_SECONDS = 8 * 60 * 60;
 
-function corsHeaders(env) {
+// /next-race is public read-only data (same trust level as Jolpica itself),
+// so it's open to any origin. /subscribe and /unsubscribe write data, so
+// those stay restricted to ALLOWED_ORIGIN.
+function corsHeaders(env, pathname) {
+  const origin = pathname === '/next-race' ? '*' : (env.ALLOWED_ORIGIN || '*');
   return {
-    'Access-Control-Allow-Origin': env.ALLOWED_ORIGIN || '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Origin': origin,
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   };
 }
 
-function json(env, body, status = 200) {
+function json(env, body, status = 200, pathname = '') {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json', ...corsHeaders(env) },
+    headers: { 'Content-Type': 'application/json', ...corsHeaders(env, pathname) },
   });
 }
 
@@ -56,13 +60,18 @@ export default {
     const url = new URL(request.url);
 
     if (request.method === 'OPTIONS') {
-      return new Response(null, { headers: corsHeaders(env) });
+      return new Response(null, { headers: corsHeaders(env, url.pathname) });
+    }
+
+    if (url.pathname === '/next-race' && request.method === 'GET') {
+      const race = await getNextRace(env);
+      return json(env, race, 200, url.pathname);
     }
 
     if (url.pathname === '/subscribe' && request.method === 'POST') {
       const body = await request.json().catch(() => null);
       if (!body?.endpoint || !body?.keys?.p256dh || !body?.keys?.auth) {
-        return json(env, { error: 'invalid subscription' }, 400);
+        return json(env, { error: 'invalid subscription' }, 400, url.pathname);
       }
       const record = {
         endpoint: body.endpoint,
@@ -70,17 +79,17 @@ export default {
         country: COUNTRY_TIMEZONES[body.country] ? body.country : 'ar',
       };
       await env.SUBSCRIPTIONS.put(await hashEndpoint(body.endpoint), JSON.stringify(record));
-      return json(env, { ok: true });
+      return json(env, { ok: true }, 200, url.pathname);
     }
 
     if (url.pathname === '/unsubscribe' && request.method === 'POST') {
       const body = await request.json().catch(() => null);
-      if (!body?.endpoint) return json(env, { error: 'missing endpoint' }, 400);
+      if (!body?.endpoint) return json(env, { error: 'missing endpoint' }, 400, url.pathname);
       await env.SUBSCRIPTIONS.delete(await hashEndpoint(body.endpoint));
-      return json(env, { ok: true });
+      return json(env, { ok: true }, 200, url.pathname);
     }
 
-    return json(env, { error: 'not found' }, 404);
+    return json(env, { error: 'not found' }, 404, url.pathname);
   },
 
   async scheduled(event, env, ctx) {
