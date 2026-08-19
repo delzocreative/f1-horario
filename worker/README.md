@@ -17,14 +17,22 @@ Cron Triggers son una feature de Workers, no de Pages Functions.
 `wrangler.toml` define dos entornos con nombre, KV y `ALLOWED_ORIGIN`
 independientes — nunca se deploya sin `--env`:
 
-| | Worker | Uso | CORS |
-|---|---|---|---|
-| `--env dev` | `f1-push-worker-dev` | probar desde previews de Pages (`https://<hash>.f1-horario.pages.dev`) | abierto (`*`), porque el hash cambia en cada deploy |
-| `--env production` | `f1-push-worker-prod` | `f1-horario.com` | restringido a `https://f1-horario.com` |
+| | Worker | Dominio | Uso | CORS |
+|---|---|---|---|---|
+| `--env dev` | `f1-push-worker-dev` | `api.dev.f1-horario.com` | probar desde previews de Pages (`https://<hash>.f1-horario.pages.dev`) | abierto (`*`), porque el hash cambia en cada deploy |
+| `--env production` | `f1-push-worker-prod` | `api.f1-horario.com` | `f1-horario.com` | restringido a `https://f1-horario.com` |
 
 Cada uno tiene sus propios namespaces de KV (así las suscripciones/pruebas de
 dev nunca se mezclan con las de producción) y su propio secret
 `VAPID_PRIVATE_KEY`.
+
+Ambos usan dominio custom (`routes` en `wrangler.toml`, con `custom_domain =
+true`) en vez del `*.workers.dev` que Cloudflare asigna por defecto — más
+estable y no lo bloquean los ad-blockers que sí bloquean `workers.dev`. Esto
+requiere que la zona `f1-horario.com` esté en la misma cuenta de Cloudflare
+que el Worker; si no lo está, `wrangler deploy` va a fallar al crear la ruta
+y hay que sacar el bloque `routes` (o mover la zona a la cuenta) para volver
+al `*.workers.dev` por defecto.
 
 ## Puesta en marcha (una sola vez por entorno)
 
@@ -61,8 +69,10 @@ npx wrangler deploy --env dev
 npx wrangler deploy --env production
 ```
 
-`wrangler deploy` va a imprimir la URL del Worker (algo como
-`https://f1-push-worker-dev.<tu-subdominio>.workers.dev`).
+`wrangler deploy` va a imprimir el dominio custom del Worker
+(`api.dev.f1-horario.com` / `api.f1-horario.com`). El certificado TLS tarda
+uno o dos minutos en aprovisionarse tras el primer deploy — hasta entonces el
+handshake HTTPS falla, no es un error real.
 
 ## Conectar el cliente
 
@@ -72,7 +82,7 @@ mergear a `main`):
 
 ```js
 const WORKER_CONFIG = {
-  URL: 'https://f1-push-worker-dev.<tu-subdominio>.workers.dev',
+  URL: 'https://api.dev.f1-horario.com',
   VAPID_PUBLIC_KEY: '...',   // la misma Public Key del paso 1
 };
 ```

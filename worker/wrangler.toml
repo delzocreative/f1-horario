@@ -17,6 +17,9 @@ kv_namespaces = [
   { binding = "SENT", id = "54f14a9be62143199ebb41be916326b1" },
   { binding = "RACE_CACHE", id = "dbc2b62e1987495d826214004f7e38e4" }
 ]
+routes = [
+  { pattern = "api.dev.f1-horario.com", custom_domain = true }
+]
 
 # Every 5 minutes. See CHECK_WINDOW_MS in src/index.js for the tolerance
 # this leaves for a missed/delayed tick.
@@ -36,6 +39,9 @@ kv_namespaces = [
   { binding = "SUBSCRIPTIONS", id = "CHANGE_ME" },
   { binding = "SENT", id = "CHANGE_ME" },
   { binding = "RACE_CACHE", id = "CHANGE_ME" }
+]
+routes = [
+  { pattern = "api.f1-horario.com", custom_domain = true }
 ]
 
 [env.production.triggers]
