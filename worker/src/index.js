@@ -1,4 +1,8 @@
-import webpush from 'web-push';
+// NOT `web-push`: it sends via Node's `https` module, which `nodejs_compat`
+// doesn't polyfill on Workers (`https.request` throws "not implemented"),
+// so every send failed silently. This one builds the payload with WebCrypto
+// and ships it with a plain `fetch()`, which does work here.
+import { buildPushPayload } from '@block65/webcrypto-web-push';
 
 // Same LATAM country -> IANA timezone list as index.html's LATAM_COUNTRIES,
 // trimmed to just what we need here (code + timezone). Keep in sync if
@@ -98,7 +102,7 @@ export default {
 };
 
 async function checkAndNotify(env) {
-  webpush.setVapidDetails(env.VAPID_SUBJECT, env.VAPID_PUBLIC_KEY, env.VAPID_PRIVATE_KEY);
+  const vapid = { subject: env.VAPID_SUBJECT, publicKey: env.VAPID_PUBLIC_KEY, privateKey: env.VAPID_PRIVATE_KEY };
 
   const race = await getNextRace(env);
   if (!race) return;
@@ -118,7 +122,7 @@ async function checkAndNotify(env) {
     const dedupeKey = `${race.season}-${race.round}:${rule.tag}`;
     if (await env.SENT.get(dedupeKey)) continue;
 
-    await sendToAllSubscribers(env, rule.tag, race, session);
+    await sendToAllSubscribers(env, vapid, rule.tag, race, session);
     await env.SENT.put(dedupeKey, '1', { expirationTtl: 7 * 24 * 60 * 60 });
   }
 }
@@ -166,7 +170,7 @@ function buildMessage(tag, race, session, countryCode) {
   return { title: '🏁 Carrera en 1 hora!', body: raceName, tag };
 }
 
-async function sendToAllSubscribers(env, tag, race, session) {
+async function sendToAllSubscribers(env, vapid, tag, race, session) {
   let cursor;
   do {
     const page = await env.SUBSCRIPTIONS.list({ cursor });
@@ -179,21 +183,30 @@ async function sendToAllSubscribers(env, tag, race, session) {
       const message = buildMessage(tag, race, session, sub.country);
 
       try {
-        await webpush.sendNotification(
-          { endpoint: sub.endpoint, keys: sub.keys },
-          JSON.stringify({
-            title: message.title,
-            body: message.body,
-            tag: message.tag,
-            icon: '/icon-192.png',
-            badge: '/icon-192.png',
-          }),
+        const payload = await buildPushPayload(
+          {
+            data: JSON.stringify({
+              title: message.title,
+              body: message.body,
+              tag: message.tag,
+              icon: '/icon-192.png',
+              badge: '/icon-192.png',
+            }),
+            options: { ttl: 60 * 60 * 24 },
+          },
+          { endpoint: sub.endpoint, expirationTime: null, keys: sub.keys },
+          vapid,
         );
-      } catch (err) {
-        // 404/410 = the browser dropped this subscription; stop tracking it.
-        if (err.statusCode === 404 || err.statusCode === 410) {
+        const res = await fetch(sub.endpoint, payload);
+
+        if (res.status === 404 || res.status === 410) {
+          // The browser dropped this subscription; stop tracking it.
           await env.SUBSCRIPTIONS.delete(name);
+        } else if (!res.ok) {
+          console.error(`push send failed for ${name}: ${res.status} ${await res.text().catch(() => '')}`);
         }
+      } catch (err) {
+        console.error(`push send threw for ${name}:`, err);
       }
     }));
   } while (cursor);
