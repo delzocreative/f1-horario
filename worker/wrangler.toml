@@ -36,9 +36,9 @@ VAPID_PUBLIC_KEY = "BAXQhXGm-T-2hk5veGR7ZVA-eNb5t4UfakZwPwLDsxI4TrIQEYappTHUri-t
 [env.production]
 name = "f1-push-worker-prod"
 kv_namespaces = [
-  { binding = "SUBSCRIPTIONS", id = "CHANGE_ME" },
-  { binding = "SENT", id = "CHANGE_ME" },
-  { binding = "RACE_CACHE", id = "CHANGE_ME" }
+  { binding = "SUBSCRIPTIONS", id = "ea1f39e5828b445cabcfbec25e4f7ef1" },
+  { binding = "SENT", id = "61094c52456842b08c3709bf10b48db6" },
+  { binding = "RACE_CACHE", id = "3b7c18967962427887bb4549bbc67194" }
 ]
 routes = [
   { pattern = "api.f1-horario.com", custom_domain = true }
@@ -50,7 +50,7 @@ crons = ["*/5 * * * *"]
 [env.production.vars]
 ALLOWED_ORIGIN = "https://f1-horario.com"
 VAPID_SUBJECT = "mailto:f1-horario@delzo.cloud"
-VAPID_PUBLIC_KEY = "CHANGE_ME_AFTER_RUNNING_generate-vapid-keys"
+VAPID_PUBLIC_KEY = "BFMkwiGEXhdBNQEYY5ZK5dNms-lwbwuIJiJTR_lH9J8zHK3L4XJxL5_SPG9EPNS8ePgS81743kX5zxziqVAWb90"
 
 # Secrets (NOT in this file): set per environment with
 #   npx wrangler secret put VAPID_PRIVATE_KEY --env dev
