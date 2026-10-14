@@ -469,13 +469,13 @@ function getWeatherForSession(dateStr, timeStr, weatherData) {
   
   if (closestHourly) {
     return {
-      temp: closestHourly.tempC || dayWeather.avgTemp,
+      temp: Number(closestHourly.tempC || dayWeather.avgTemp),
       emoji: getWeatherEmoji(closestHourly.weatherCode)
     };
   }
   
   return {
-    temp: dayWeather.avgTemp,
+    temp: Number(dayWeather.avgTemp),
     emoji: '🌡️'
   };
 }
@@ -509,7 +509,7 @@ function renderSchedule() {
           </div>
           <div class="text-right flex items-center gap-3">
             <p class="font-bold text-lg ${session.key === 'Race' ? 'text-f1-red' : 'text-white'}">${localTime}</p>
-            ${weather ? `<span class="text-sm">${weather.temp}°C ${weather.emoji}</span>` : ''}
+            ${weather && Number.isFinite(weather.temp) ? `<span class="text-sm">${weather.temp}°C ${weather.emoji}</span>` : ''}
             ${isNext ? '<p class="text-xs text-f1-red font-medium">Próxima</p>' : ''}
             ${isPast ? '<p class="text-xs text-slate-500">Finalizada</p>' : ''}
           </div>

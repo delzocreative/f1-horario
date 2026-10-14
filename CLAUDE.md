@@ -4,25 +4,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-F1 Horario LATAM — a single-page PWA showing the next Formula 1 race weekend schedule converted to the local time of 19 Latin American countries, plus circuit info and weather. Spanish-language UI. No build step, no framework, no package manager: the entire app is `index.html` (markup, Tailwind config, and all JS in one inline `<script>`), plus `sw.js` (service worker) and `manifest.json` (PWA manifest).
+F1 Horario LATAM — a single-page PWA showing the next Formula 1 race weekend schedule converted to the local time of 19 Latin American countries, plus circuit info and weather. Spanish-language UI. No build step, no framework, no package manager: the entire app is `public/index.html` (markup, Tailwind config, and all JS in one inline `<script>`), plus `public/sw.js` (service worker) and `public/manifest.json` (PWA manifest). Only `public/` is deployed — everything else in the repo (docs, `worker/`) stays out of the site.
 
 ## Running / testing locally
 
 There is no build/lint/test tooling in this repo (no `package.json`). To work on it:
 
-- Open `index.html` directly in a browser, or serve the directory with any static file server (e.g. `npx serve .`) so the service worker and manifest resolve correctly relative to `/`.
-- Service worker changes require a hard refresh / unregister to take effect — bump `CACHE_NAME` in `sw.js` (currently `f1-dashboard-v3`) when changing which assets are cached or fetch behavior, so returning clients pick up the new worker and drop the old cache.
+- Open `public/index.html` directly in a browser, or serve `public/` with any static file server (e.g. `npx serve public`) so the service worker and manifest resolve correctly relative to `/`.
+- Service worker changes require a hard refresh / unregister to take effect — bump `CACHE_NAME` in `public/sw.js` (currently `f1-dashboard-v4`) when changing which assets are cached or fetch behavior, so returning clients pick up the new worker and drop the old cache.
 - There are no automated tests. Verify changes manually in the browser (check both first-load skeleton state and cached/offline state).
 
 ## Deployment
 
-Deployed to Cloudflare Pages (project `f1-horario`, account `enzocontacto1@gmail.com`) as a static site — no `wrangler.toml` or build command, just the static files in the repo root. Production domain: `f1-horario.com`. Pushing a branch produces a preview deployment at `https://<hash>.f1-horario.pages.dev`.
-
-(`.wrangler/cache/` in the repo root references an older/unrelated project name — Pages project name and account here are per the note above, not that cache file.)
+Deployed to Cloudflare Pages (project `f1-horario`) as a static site — no `wrangler.toml` or build command; the Pages build output directory is set to `public`, so only that folder is served. `public/_headers` sets the security headers (CSP, frame-ancestors, Permissions-Policy) — add any new external origin the app loads from to the CSP there, or it will be blocked. `public/404.html` makes unknown paths return a real 404. Production domain: `f1-horario.com`. Pushing a branch produces a preview deployment at `https://<hash>.f1-horario.pages.dev`.
 
 ## Architecture
 
-Everything lives in `index.html` under a single inline script, structured as:
+Everything lives in `public/index.html` under a single inline script, structured as:
 
 - **Config/data constants** (top of script): `CONFIG` (cache TTLs, auto-refresh interval), `SESSION_NAMES`/`SESSION_ORDER` (race weekend session labels), `LATAM_COUNTRIES` (the 19 supported countries with IANA timezones), `CIRCUIT_DATA` (static per-circuit stats keyed by Jolpica `circuitId`), `WIKI_CIRCUIT_MAP` (circuitId → Wikipedia page title), `COUNTRY_NAME_MAP` (English country name → ISO code for flags).
 - **Global `state` object**: current race, its sessions, selected country, countdown interval handle, weather data. There's no framework — rendering is done by directly setting `innerHTML`/`textContent` on elements looked up via the `$(id)` helper.
@@ -47,7 +45,7 @@ Add an entry to `LATAM_COUNTRIES` with `code` (ISO 3166-1 alpha-2, used for flag
 
 ## Backend Worker (`worker/`) — race data + push notifications
 
-A separate Cloudflare Worker (not Pages Functions — Cron Triggers require a real Worker), same Cloudflare account as Pages (`enzocontacto1@gmail.com`). `WORKER_CONFIG` in `index.html` points at it. It does two things:
+A separate Cloudflare Worker (not Pages Functions — Cron Triggers require a real Worker), same Cloudflare account as Pages. `WORKER_CONFIG` in `index.html` points at it. It does two things:
 
 1. **Serves race data**: `GET /next-race` returns the next upcoming race (Jolpica-shaped JSON), cached in the `RACE_CACHE` KV namespace with an 8h TTL. The client's `fetchRace()` calls this instead of hitting Jolpica directly — Jolpica itself is only ever called by the Worker, at most a few times a day, however many people are loading the site. **This means the main dashboard now depends on this Worker being up**, not just the push feature — a deliberate trade-off (fewer calls to a shared free API) made over keeping the site fully static/self-contained.
 2. **Sends push notifications**: 1 day before FP1, 1 hour before Qualifying, 1 hour before the Race.

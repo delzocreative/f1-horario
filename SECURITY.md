@@ -6,19 +6,13 @@ La versión actual en la rama `main` es la única versión soportada.
 
 ## Reporting a Vulnerability
 
-Si encuentras una vulnerabilidad de seguridad, por favor reporta el problema abriendo un issue en el repositorio:
+Por favor **no** abras un issue público para reportar una vulnerabilidad. Usá el reporte privado de GitHub:
 
-- **Repository**: https://github.com/delzocreative/f1-horario
-- **Issues**: https://github.com/delzocreative/f1-horario/issues
-
-Para vulnerabilidades críticas, puedes contactar directamente al mantenedor del repositorio.
+- https://github.com/delzocreative/f1-horario/security/advisories/new
 
 ## Seguridad del Proyecto
 
-Este proyecto es una aplicación web estática que:
-- No utiliza autenticación de usuarios
-- No almacena datos sensibles
-- No procesa información personal de usuarios
-- Solo consume APIs públicas (Jolpica F1, Wikipedia, wttr.in)
-
-Todas las dependencias son CDN externas (TailwindCSS) y el código es ejecutado completamente en el navegador del cliente.
+- El sitio (`public/`) es estático: no hay cuentas de usuario ni autenticación.
+- El único dato que se guarda es la suscripción push del navegador (endpoint + claves de cifrado) y el país elegido, en el Worker (`worker/`), para poder enviar las notificaciones. Se borra cuando el navegador da de baja la suscripción.
+- La clave privada VAPID vive como secreto del Worker, nunca en el repo.
+- APIs externas: Jolpica F1 (vía el Worker), Wikipedia, wttr.in, flagpedia/flagcdn; Tailwind desde su CDN.

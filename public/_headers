@@ -1,0 +1,12 @@
+# Cloudflare Pages response headers. HSTS is set at the zone level in
+# Cloudflare (SSL/TLS > Edge Certificates), not here.
+#
+# script-src needs 'unsafe-inline' because all app JS (and the Tailwind
+# config) is inline in index.html; Tailwind's CDN build injects <style> tags,
+# hence style-src 'unsafe-inline'. api.dev.* is allowed for preview deploys.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://flagpedia.net https://flagcdn.com https://*.wikimedia.org; connect-src 'self' https://api.f1-horario.com https://api.dev.f1-horario.com https://en.wikipedia.org https://wttr.in https://flagcdn.com; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
