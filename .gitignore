@@ -21,3 +21,6 @@ npm-debug.log*
 # Build outputs
 dist/
 build/
+
+# Wrangler local state/cache
+.wrangler/
