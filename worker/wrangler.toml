@@ -26,6 +26,12 @@ routes = [
 [env.dev.triggers]
 crons = ["*/5 * * * *"]
 
+# Workers Logs (console output + one line per invocation). Retention is set
+# by the plan (3 days on Free), not configurable here. Never log full
+# subscriptions (endpoint/keys) — only the KV hash.
+[env.dev.observability]
+enabled = true
+
 [env.dev.vars]
 # Pages preview URLs are random per-deploy hashes, so CORS stays open here.
 ALLOWED_ORIGIN = "*"
@@ -46,6 +52,9 @@ routes = [
 
 [env.production.triggers]
 crons = ["*/5 * * * *"]
+
+[env.production.observability]
+enabled = true
 
 [env.production.vars]
 ALLOWED_ORIGIN = "https://f1-horario.com"
