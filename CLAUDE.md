@@ -16,7 +16,7 @@ There is no build/lint/test tooling in this repo (no `package.json`). To work on
 
 ## Deployment
 
-Deployed to Cloudflare Pages (project `f1-horario`, account `enzocontacto1@gmail.com`) as a static site — no `wrangler.toml` or build command; the Pages build output directory is set to `public`, so only that folder is served. `public/_headers` sets the security headers (CSP, frame-ancestors, Permissions-Policy) — add any new external origin the app loads from to the CSP there, or it will be blocked. `public/404.html` makes unknown paths return a real 404. Production domain: `f1-horario.com`. Pushing a branch produces a preview deployment at `https://<hash>.f1-horario.pages.dev`.
+Deployed to Cloudflare Pages (project `f1-horario`) as a static site — no `wrangler.toml` or build command; the Pages build output directory is set to `public`, so only that folder is served. `public/_headers` sets the security headers (CSP, frame-ancestors, Permissions-Policy) — add any new external origin the app loads from to the CSP there, or it will be blocked. `public/404.html` makes unknown paths return a real 404. Production domain: `f1-horario.com`. Pushing a branch produces a preview deployment at `https://<hash>.f1-horario.pages.dev`.
 
 ## Architecture
 
@@ -45,7 +45,7 @@ Add an entry to `LATAM_COUNTRIES` with `code` (ISO 3166-1 alpha-2, used for flag
 
 ## Backend Worker (`worker/`) — race data + push notifications
 
-A separate Cloudflare Worker (not Pages Functions — Cron Triggers require a real Worker), same Cloudflare account as Pages (`enzocontacto1@gmail.com`). `WORKER_CONFIG` in `index.html` points at it. It does two things:
+A separate Cloudflare Worker (not Pages Functions — Cron Triggers require a real Worker), same Cloudflare account as Pages. `WORKER_CONFIG` in `index.html` points at it. It does two things:
 
 1. **Serves race data**: `GET /next-race` returns the next upcoming race (Jolpica-shaped JSON), cached in the `RACE_CACHE` KV namespace with an 8h TTL. The client's `fetchRace()` calls this instead of hitting Jolpica directly — Jolpica itself is only ever called by the Worker, at most a few times a day, however many people are loading the site. **This means the main dashboard now depends on this Worker being up**, not just the push feature — a deliberate trade-off (fewer calls to a shared free API) made over keeping the site fully static/self-contained.
 2. **Sends push notifications**: 1 day before FP1, 1 hour before Qualifying, 1 hour before the Race.
