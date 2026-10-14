@@ -157,7 +157,7 @@ async function checkAndNotify(env) {
     const dedupeKey = `${race.season}-${race.round}:${rule.tag}`;
     if (await env.SENT.get(dedupeKey)) continue;
 
-    await sendToAllSubscribers(env, vapid, rule.tag, race, session);
+    await sendToAllSubscribers(env, vapid, rule, race, session);
     await env.SENT.put(dedupeKey, '1', { expirationTtl: 7 * 24 * 60 * 60 });
   }
 }
@@ -205,7 +205,9 @@ function buildMessage(tag, race, session, countryCode) {
   return { title: '🏁 Carrera en 1 hora!', body: raceName, tag };
 }
 
-async function sendToAllSubscribers(env, vapid, tag, race, session) {
+async function sendToAllSubscribers(env, vapid, rule, race, session) {
+  const { tag } = rule;
+  const counts = { ok: 0, gone: 0, failed: 0 };
   let cursor;
   do {
     const page = await env.SUBSCRIPTIONS.list({ cursor });
@@ -227,7 +229,15 @@ async function sendToAllSubscribers(env, vapid, tag, race, session) {
               icon: '/icon-192.png',
               badge: '/icon-192.png',
             }),
-            options: { ttl: 60 * 60 * 24 },
+            options: {
+              // Once the session starts the notice is useless, so the push
+              // service drops it instead of delivering it hours late to a
+              // phone that was offline.
+              ttl: Math.floor(rule.leadMs / 1000),
+              // Without this FCM defaults to "normal", which Android holds
+              // back while the phone is in Doze (e.g. a 4am race notice).
+              urgency: 'high',
+            },
           },
           { endpoint: sub.endpoint, expirationTime: null, keys: sub.keys },
           vapid,
@@ -236,13 +246,20 @@ async function sendToAllSubscribers(env, vapid, tag, race, session) {
 
         if (res.status === 404 || res.status === 410) {
           // The browser dropped this subscription; stop tracking it.
+          counts.gone++;
           await env.SUBSCRIPTIONS.delete(name);
         } else if (!res.ok) {
+          counts.failed++;
           console.error(`push send failed for ${name}: ${res.status} ${await res.text().catch(() => '')}`);
+        } else {
+          counts.ok++;
         }
       } catch (err) {
+        counts.failed++;
         console.error(`push send threw for ${name}:`, err);
       }
     }));
   } while (cursor);
+
+  console.log(`push ${race.season}-${race.round}:${tag} sent ok=${counts.ok} gone=${counts.gone} failed=${counts.failed}`);
 }
