@@ -54,6 +54,41 @@ function json(env, body, status = 200, pathname = '') {
   });
 }
 
+// Only real browser push services. Without this, /subscribe would store any
+// URL and the cron would then POST to attacker-chosen hosts on every send.
+const PUSH_SERVICE_HOSTS = [
+  /^fcm\.googleapis\.com$/,                // Chrome, Edge (Chromium), Android
+  /^updates\.push\.services\.mozilla\.com$/, // Firefox
+  /^([a-z0-9-]+\.)*push\.apple\.com$/,      // Safari / iOS
+  /^([a-z0-9-]+\.)*notify\.windows\.com$/,  // legacy Edge / Windows
+];
+
+// A real subscription JSON is well under 1KB; anything much bigger is junk.
+const MAX_BODY_BYTES = 4096;
+
+function isValidPushEndpoint(endpoint) {
+  if (typeof endpoint !== 'string' || endpoint.length > 1024) return false;
+  let url;
+  try { url = new URL(endpoint); } catch { return false; }
+  return url.protocol === 'https:' && !url.port && PUSH_SERVICE_HOSTS.some(re => re.test(url.hostname));
+}
+
+// p256dh is a 65-byte P-256 public key, auth a 16-byte secret, both base64url.
+function isValidKeys(keys) {
+  return typeof keys?.p256dh === 'string' && /^[A-Za-z0-9_-]{80,100}={0,2}$/.test(keys.p256dh)
+    && typeof keys?.auth === 'string' && /^[A-Za-z0-9_-]{16,32}={0,2}$/.test(keys.auth);
+}
+
+// Reads a JSON body, refusing anything over MAX_BODY_BYTES (checked on the
+// actual bytes, not just the Content-Length header, which can be omitted).
+async function readJsonBody(request) {
+  const declared = Number(request.headers.get('Content-Length'));
+  if (declared > MAX_BODY_BYTES) return null;
+  const text = await request.text().catch(() => null);
+  if (text === null || text.length > MAX_BODY_BYTES) return null;
+  try { return JSON.parse(text); } catch { return null; }
+}
+
 async function hashEndpoint(endpoint) {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(endpoint));
   return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
@@ -73,8 +108,8 @@ export default {
     }
 
     if (url.pathname === '/subscribe' && request.method === 'POST') {
-      const body = await request.json().catch(() => null);
-      if (!body?.endpoint || !body?.keys?.p256dh || !body?.keys?.auth) {
+      const body = await readJsonBody(request);
+      if (!isValidPushEndpoint(body?.endpoint) || !isValidKeys(body?.keys)) {
         return json(env, { error: 'invalid subscription' }, 400, url.pathname);
       }
       const record = {
@@ -87,8 +122,8 @@ export default {
     }
 
     if (url.pathname === '/unsubscribe' && request.method === 'POST') {
-      const body = await request.json().catch(() => null);
-      if (!body?.endpoint) return json(env, { error: 'missing endpoint' }, 400, url.pathname);
+      const body = await readJsonBody(request);
+      if (!isValidPushEndpoint(body?.endpoint)) return json(env, { error: 'missing endpoint' }, 400, url.pathname);
       await env.SUBSCRIPTIONS.delete(await hashEndpoint(body.endpoint));
       return json(env, { ok: true }, 200, url.pathname);
     }
