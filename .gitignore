@@ -24,3 +24,7 @@ build/
 
 # Wrangler local state/cache
 .wrangler/
+
+# Site build tooling
+node_modules/
+.tmp-styles.css

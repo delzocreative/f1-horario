@@ -1,12 +1,37 @@
 # Cloudflare Pages response headers. HSTS is set at the zone level in
 # Cloudflare (SSL/TLS > Edge Certificates), not here.
 #
-# script-src needs 'unsafe-inline' because all app JS (and the Tailwind
-# config) is inline in index.html; Tailwind's CDN build injects <style> tags,
-# hence style-src 'unsafe-inline'. api.dev.* is allowed for preview deploys.
+# No 'unsafe-inline' anywhere: all JS lives in /assets/app.<hash>.js and all
+# CSS in /assets/styles.<hash>.css (built by `npm run build`, see
+# scripts/build.mjs). JS only touches styles via element.style (CSSOM), which
+# CSP allows. api.dev.* is used by Pages previews (see WORKER_CONFIG).
+# flagpedia.net is in connect-src because sw.js fetch()es flag images to cache them.
+# static.cloudflareinsights.com / cloudflareinsights.com = Cloudflare Web Analytics.
 /*
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://flagpedia.net https://flagcdn.com https://*.wikimedia.org; connect-src 'self' https://api.f1-horario.com https://api.dev.f1-horario.com https://en.wikipedia.org https://wttr.in https://flagcdn.com; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self'; font-src 'self'; img-src 'self' data: https://flagpedia.net https://*.wikimedia.org; connect-src 'self' https://api.f1-horario.com https://api.dev.f1-horario.com https://en.wikipedia.org https://wttr.in https://flagpedia.net https://cloudflareinsights.com; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()
+
+# Hashed filenames (scripts/build.mjs) and versioned font name: safe to cache forever.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Icons keep fixed names, so a shorter cache.
+/icon-192.png
+  Cache-Control: public, max-age=86400
+/icon-512.png
+  Cache-Control: public, max-age=86400
+
+# Always revalidate the entry points so new deploys are picked up.
+/
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+/sw.js
+  Cache-Control: no-cache
+/manifest.json
+  Cache-Control: no-cache

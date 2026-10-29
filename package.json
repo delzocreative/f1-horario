@@ -1,0 +1,11 @@
+{
+  "name": "f1-horario-site",
+  "private": true,
+  "description": "Build tooling for the static site in public/ (Tailwind CSS + hashed assets). Not deployed.",
+  "scripts": {
+    "build": "node scripts/build.mjs"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
+  }
+}
