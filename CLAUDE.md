@@ -18,6 +18,10 @@ There is no build/lint/test tooling in this repo (no `package.json`). To work on
 
 Deployed to Cloudflare Pages (project `f1-horario`) as a static site — no `wrangler.toml` or build command; the Pages build output directory is set to `public`, so only that folder is served. `public/_headers` sets the security headers (CSP, frame-ancestors, Permissions-Policy) — add any new external origin the app loads from to the CSP there, or it will be blocked. `public/404.html` makes unknown paths return a real 404. Production domain: `f1-horario.com`. Pushing a branch produces a preview deployment at `https://<hash>.f1-horario.pages.dev`.
 
+## Build (Tailwind + hashed assets)
+
+Source lives in `src/` (`src/index.html`, `src/app.js`, `src/tailwind.css`); `tailwind.config.js` and `scripts/build.mjs` sit at the repo root, outside `public/`. Pages still has no build command, so run `npm install && npm run build` after any change in `src/` and **commit the generated files** in `public/` (`public/index.html`, `public/assets/styles.<hash>.css`, `public/assets/app.<hash>.js`, and the `STATIC_ASSETS`/`CACHE_NAME` lines of `public/sw.js`). Never edit `public/index.html` by hand. Inter is self-hosted in `public/fonts/`. There is no inline JS/CSS, so the CSP in `public/_headers` has no `'unsafe-inline'`; don't add inline `<script>`, `onclick=""`-style attributes, or `<style>` tags. `WORKER_CONFIG` picks the prod Worker on `f1-horario.com` and the dev Worker (with its own VAPID public key) everywhere else, so there's no URL to flip before merging.
+
 ## Architecture
 
 Everything lives in `public/index.html` under a single inline script, structured as:

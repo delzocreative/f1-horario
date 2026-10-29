@@ -1,10 +1,13 @@
-const CACHE_NAME = 'f1-dashboard-v4';
+const CACHE_NAME = 'f1-dashboard-3fbf46c536';
 
 const STATIC_ASSETS = [
   '/index.html',
   '/manifest.json',
   '/icon-192.png',
-  '/icon-512.png'
+  '/icon-512.png',
+  '/assets/styles.0ad4805785.css',
+  '/assets/app.90a147bc61.js',
+  '/fonts/inter-latin-v20.woff2'
 ];
 
 self.addEventListener('install', event => {
@@ -38,7 +41,7 @@ self.addEventListener('fetch', event => {
 
   // External origins: only intercept known API/CDN hosts
   if (url.origin !== location.origin) {
-    if (url.hostname === 'flagcdn.com') {
+    if (url.hostname === 'flagpedia.net') {
       event.respondWith(
         caches.match(request).then(cached => {
           if (cached) return cached;

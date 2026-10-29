@@ -1,0 +1,24 @@
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url(/fonts/inter-latin-v20.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Formerly the inline <style> block in index.html */
+.skeleton { animation: pulse 1.5s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.fade-in { animation: fadeIn 0.3s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+dialog::backdrop { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(4px); }
+dialog { animation: slideUp 0.3s ease-out; }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.session-row { transition: background-color 0.2s; }
+.session-row:hover { background-color: rgba(51, 65, 85, 0.5); }
+.session-row.next { background-color: rgba(225, 6, 0, 0.15); border-left: 3px solid #e10600; }

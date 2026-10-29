@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="description" content="Horarios de Formula 1 para Latinoamerica - Proximo Gran Premio">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Horario F1 LATAM</title>
+  <link rel="preload" href="/fonts/inter-latin-v20.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/assets/__CSS__">
+  <link rel="icon" href="/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans">
+  <header class="sticky top-0 z-40 bg-slate-900/95 backdrop-blur border-b border-slate-700">
+    <div class="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+      <h1 class="text-lg font-bold flex items-center gap-2">
+        <span class="text-2xl">🏁</span>
+        <span>Horario F1 LATAM</span>
+      </h1>
+      <div class="flex items-center gap-2">
+        <button id="notify-btn" class="hidden p-2 hover:bg-slate-800 rounded-lg transition-colors" aria-label="Activar notificaciones" aria-pressed="false" title="Activar notificaciones">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+          </svg>
+        </button>
+        <button id="refresh-btn" class="p-2 hover:bg-slate-800 rounded-lg transition-colors" aria-label="Actualizar">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-lg mx-auto px-4 py-6 space-y-6">
+    <!-- Skeleton Loader -->
+    <div id="skeleton-loader" class="space-y-6">
+      <div class="bg-slate-800 rounded-2xl overflow-hidden">
+        <div class="aspect-video bg-slate-700 skeleton"></div>
+        <div class="p-5 space-y-3">
+          <div class="h-7 bg-slate-700 rounded skeleton w-3/4"></div>
+          <div class="h-4 bg-slate-700 rounded skeleton w-1/2"></div>
+          <div class="h-12 bg-slate-700 rounded skeleton"></div>
+        </div>
+      </div>
+      <div class="bg-slate-800 rounded-xl p-5">
+        <div class="h-5 bg-slate-700 rounded skeleton w-1/2 mb-4"></div>
+        <div class="space-y-2">
+          <div class="h-12 bg-slate-700 rounded skeleton"></div>
+          <div class="h-12 bg-slate-700 rounded skeleton"></div>
+          <div class="h-12 bg-slate-700 rounded skeleton"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="main-content" class="hidden space-y-6">
+      <!-- Race Header Card -->
+      <section class="bg-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div class="relative aspect-video bg-slate-700">
+          <img id="circuit-image" class="w-full h-full object-contain" alt="Circuito" width="640" height="360" fetchpriority="high" decoding="async" />
+          <img id="country-flag" class="absolute top-3 right-3 w-12 h-8 rounded border-2 border-white/80 shadow-lg object-cover" alt="Bandera" />
+          <div id="circuit-placeholder" class="hidden absolute inset-0 flex items-center justify-center bg-slate-700">
+            <svg class="w-32 h-32 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+            </svg>
+          </div>
+        </div>
+        
+<div class="p-5">
+           <div class="flex items-start justify-between gap-4">
+             <div>
+               <h2 id="race-name" class="text-2xl font-bold text-white"></h2>
+               <p id="circuit-location" class="text-slate-400 text-sm mt-1"></p>
+             </div>
+             <div id="countdown-box" class="text-right shrink-0">
+               <p class="text-xs text-slate-400">Comienza en</p>
+               <p id="countdown" class="text-f1-red font-mono font-bold text-lg"></p>
+             </div>
+           </div>
+         </div>
+      </section>
+
+<!-- Schedule Table -->
+       <section class="bg-slate-800 rounded-xl overflow-hidden">
+         <div class="px-5 py-4 border-b border-slate-700 flex items-center justify-between">
+           <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+             <svg class="w-5 h-5 text-f1-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+             </svg>
+             Horarios del Fin de Semana
+           </h3>
+           <button id="select-country-btn" class="flex items-center gap-2 bg-slate-700/50 rounded-lg px-3 py-1.5 hover:bg-slate-700 transition-colors">
+             <img id="selected-flag" class="w-6 h-4 rounded border border-slate-600 object-cover" alt="Pais" />
+             <span id="selected-country-short" class="text-sm font-medium text-white"></span>
+             <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+             </svg>
+           </button>
+         </div>
+         <div id="schedule-list" class="divide-y divide-slate-700/50"></div>
+       </section>
+
+      <!-- Circuit Info -->
+      <section id="circuit-info" class="bg-slate-800 rounded-xl p-5 hidden fade-in">
+        <h3 class="text-lg font-semibold mb-4 flex items-center gap-2 text-white">
+          <svg class="w-5 h-5 text-f1-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Información del Circuito
+        </h3>
+<div class="grid grid-cols-2 gap-3">
+           <div class="bg-slate-700/50 rounded-lg p-3">
+             <p class="text-xs text-slate-400">Longitud</p>
+             <p id="track-length" class="font-semibold text-white"></p>
+           </div>
+           <div class="bg-slate-700/50 rounded-lg p-3">
+             <p class="text-xs text-slate-400">Curvas</p>
+             <p id="track-turns" class="font-semibold text-white"></p>
+           </div>
+           <div class="bg-slate-700/50 rounded-lg p-3">
+             <p class="text-xs text-slate-400">Vueltas</p>
+             <p id="race-laps" class="font-semibold text-white"></p>
+           </div>
+           <div class="bg-slate-700/50 rounded-lg p-3">
+             <p class="text-xs text-slate-400">Inaugurado</p>
+             <p id="track-opened" class="font-semibold text-white"></p>
+           </div>
+           <div class="bg-slate-700/50 rounded-lg p-3">
+             <p class="text-xs text-slate-400">Capacidad</p>
+             <p id="track-capacity" class="font-semibold text-white"></p>
+           </div>
+           <div class="bg-slate-700/50 rounded-lg p-3">
+             <p class="text-xs text-slate-400">Record Vuelta</p>
+             <p id="lap-record" class="font-semibold text-white"></p>
+             <p id="record-holder" class="text-xs text-slate-400 mt-1"></p>
+           </div>
+         </div>
+       </section>
+    </div>
+  </main>
+
+  <footer class="max-w-lg mx-auto px-4 py-8 text-center text-slate-500 text-xs">
+    <p>Datos oficiales de Formula 1</p>
+    <p class="mt-1">Hecho para fans de F1 en LATAM</p>
+    <a href="https://github.com/delzocreative/f1-horario" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 mt-4 text-slate-400 hover:text-white transition-colors">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
+      </svg>
+      <span>Ver código en GitHub</span>
+    </a>
+    <p class="mt-3">
+      <a href="https://delzo.cloud" target="_blank" rel="noopener noreferrer" class="text-slate-500 hover:text-white transition-colors">
+        <span id="footer-year"></span> DelzoCreative by DelzoCloud
+      </a>
+    </p>
+  </footer>
+
+  <!-- Country Modal -->
+  <dialog id="country-modal" class="w-full max-w-lg mx-auto h-full md:h-auto md:max-h-[90vh] md:rounded-2xl bg-slate-900 text-slate-100 border-0">
+    <div class="flex flex-col h-full">
+      <div class="flex items-center justify-between p-4 border-b border-slate-700 sticky top-0 bg-slate-900 z-10">
+        <h3 class="text-lg font-semibold text-white">Seleccionar País</h3>
+        <button id="close-modal" class="p-2 hover:bg-slate-800 rounded-lg transition-colors" aria-label="Cerrar">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div id="country-list" class="flex-1 overflow-y-auto p-2"></div>
+    </div>
+  </dialog>
+
+  <script src="/assets/__JS__" defer></script>
+</body>
+</html>
